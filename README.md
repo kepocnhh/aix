@@ -1,0 +1,2 @@
+# aix
+ai scripts
