@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "hooks": {
+    "beforeSubmitPrompt": [],
+    "afterAgentResponse": [
+      {
+        "command": "/usr/local/bin/bash -c \"cd ${CURSOR_PROJECT_DIR} && ~/.cursor/hooks/on_response.sh\"",
+        "timeout": 10
+      }
+    ],
+    "beforeShellExecution": [],
+    "sessionEnd": []
+  }
+}
