@@ -6,3 +6,9 @@ codex_hooks = true
 type = 'command'
 command = 'env LC_ALL=C ~/.codex/hooks/on_stop.sh'
 timeout = 8
+
+[[hooks.UserPromptSubmit]]
+[[hooks.UserPromptSubmit.hooks]]
+type = 'command'
+command = 'env LC_ALL=C ~/.codex/hooks/on_submit.sh'
+timeout = 8
