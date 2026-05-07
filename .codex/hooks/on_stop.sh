@@ -33,8 +33,24 @@ else
  echo "No dir \"${ISSUER}\"." >&2
 fi
 
-CODEX_TURN_ID=$(printf '%s' "${JSON_INPUT}" | yq -r .turn_id)
-CODEX_TRANSCRIPT_PATH=$(printf '%s' "${JSON_INPUT}" | yq -r .transcript_path)
+CODEX_TURN_ID=$(printf '%s' "${JSON_INPUT}" | yq -r .turn_id) # todo
+
+CODEX_TRANSCRIPT_PATH=$(printf '%s' "${JSON_INPUT}" | yq -r '.transcript_path // ""')
+if [[ ! -f "${CODEX_TRANSCRIPT_PATH}" ]]; then
+ echo "No file \"${CODEX_TRANSCRIPT_PATH}\"!" >&2
+ echo '{"continue":false}'; exit 1
+elif [[ ! -s "${CODEX_TRANSCRIPT_PATH}" ]]; then
+ echo "File \"${CODEX_TRANSCRIPT_PATH}\" is empty!" >&2
+ echo '{"continue":false}'; exit 1; fi
+
+ISSUER="${CODEX_WORKDIR}/.excluded/jsonl/codex"
+
+if test -d "${ISSUER}"; then
+ cp "${CODEX_TRANSCRIPT_PATH}" "${ISSUER}/codex-${CODEX_SESSION_ID}.jsonl"
+else
+ echo "No dir \"${ISSUER}\"." >&2
+fi
+
 CODEX_RESPONSE=$(printf '%s' "${JSON_INPUT}" | yq -r '.last_assistant_message // ""')
 
 if test -z "${CODEX_RESPONSE}"; then
