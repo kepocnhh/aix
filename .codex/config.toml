@@ -4,5 +4,5 @@ codex_hooks = true
 [[hooks.Stop]]
 [[hooks.Stop.hooks]]
 type = 'command'
-command = '~/.codex/hooks/on_stop.sh'
+command = 'env LC_ALL=C ~/.codex/hooks/on_stop.sh'
 timeout = 8
