@@ -1,11 +1,16 @@
 {
   "version": 1,
   "hooks": {
-    "beforeSubmitPrompt": [],
+    "beforeSubmitPrompt": [
+      {
+        "command": "/usr/local/bin/bash -c \"cd ${CURSOR_PROJECT_DIR} && ~/.cursor/hooks/on_submit.sh\"",
+        "timeout": 8
+      }
+    ],
     "afterAgentResponse": [
       {
         "command": "/usr/local/bin/bash -c \"cd ${CURSOR_PROJECT_DIR} && ~/.cursor/hooks/on_response.sh\"",
-        "timeout": 10
+        "timeout": 8
       }
     ],
     "beforeShellExecution": [],
