@@ -1,5 +1,7 @@
 #!/usr/local/bin/bash
 
+AI_NAME='cursor'
+
 JSON_INPUT="$(cat)"
 if test $? -ne 0; then
  echo 'Could not get JSON input!' >&2
@@ -9,34 +11,34 @@ elif -z "${JSON_INPUT}"; then
  echo '{"continue":false}'; exit 1
 fi
 
-CURSOR_CONVERSATION_ID=$(printf '%s' "${JSON_INPUT}" | yq -eMr -p=json -o=json .conversation_id)
+AI_SESSION_ID=$(printf '%s' "${JSON_INPUT}" | yq -eMr -p=json -o=json .conversation_id)
 if test $? -ne 0; then
  echo 'Could not get conversation ID!' >&2
  echo '{"continue":false}'; exit 1; fi
 
-CURSOR_GENERATION_ID=$(printf '%s' "${JSON_INPUT}" | yq -eMr -p=json -o=json .generation_id)
+AI_TURN_ID=$(printf '%s' "${JSON_INPUT}" | yq -eMr -p=json -o=json .generation_id)
 if test $? -ne 0; then
  echo 'Could not get generation ID!' >&2
  echo '{"continue":false}'; exit 1; fi
 
-CURSOR_PROMPT=$(printf '%s' "${JSON_INPUT}" | yq -Mr -p=json -o=json '.prompt // ""')
-if test -z "${CURSOR_PROMPT}"; then
+USER_PROMPT=$(printf '%s' "${JSON_INPUT}" | yq -Mr -p=json -o=json '.prompt // ""')
+if test -z "${USER_PROMPT}"; then
  echo "No prompt!" >&2
  echo '{"continue":false}'; exit 1; fi
 
-CURSOR_WORKDIR="$(pwd)"
+AI_WORKDIR="$(pwd)"
 
-ISSUER="${CURSOR_WORKDIR}/.excluded/yml/cursor"
+ISSUER="${AI_WORKDIR}/.excluded/yml/${AI_NAME}"
 
 if test -d "${ISSUER}"; then
- CURSOR_CONVERSATION_ID="${CURSOR_CONVERSATION_ID}" \
- CURSOR_GENERATION_ID="${CURSOR_GENERATION_ID}" \
- CURSOR_PROMPT="${CURSOR_PROMPT}" \
+ AI_SESSION_ID="${AI_SESSION_ID}" \
+ AI_TURN_ID="${AI_TURN_ID}" \
+ USER_PROMPT="${USER_PROMPT}" \
  yq -n -M -o yml '{
-   "session_id": strenv(CURSOR_CONVERSATION_ID),
-   "turn_id": strenv(CURSOR_GENERATION_ID),
-   "prompt": strenv(CURSOR_PROMPT)
-  }' > "${ISSUER}/cursor-${CURSOR_CONVERSATION_ID}-${CURSOR_GENERATION_ID}.yml"
+   "session_id": strenv(AI_SESSION_ID),
+   "turn_id": strenv(AI_TURN_ID),
+   "prompt": strenv(USER_PROMPT)
+  }' > "${ISSUER}/${AI_NAME}-${AI_SESSION_ID}-${AI_TURN_ID}.yml"
 fi
 
 echo '{"continue":true}'
