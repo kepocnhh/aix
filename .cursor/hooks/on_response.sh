@@ -1,25 +1,38 @@
 #!/usr/local/bin/bash
 
-FILE_DIR="$(TZ='utc' date +%Y/%m/%d)"
+AI_NAME='cursor'
+
+FILE_DIR="$(TZ='utc' LC_ALL=C date +%Y/%m/%d)"
 
 JSON_INPUT="$(cat)"
-CONVERSATION_ID=$(echo "${JSON_INPUT}" | yq .conversation_id)
-POINTER="$(TZ='utc' date +%Y%m%d%H%M%S)-${CONVERSATION_ID:0:8}"
-
-ISSUER='.excluded/json/cursor'
-
-if test -d "${ISSUER}"; then
- mkdir -p "${ISSUER}/${FILE_DIR}"
- echo "${JSON_INPUT}" | yq > "${ISSUER}/${FILE_DIR}/cursor-${POINTER}.json"
-else
- echo "No dir \"${ISSUER}\"."
+if test $? -ne 0; then
+ echo 'Could not get JSON input!' >&2; exit 1
+elif -z "${JSON_INPUT}"; then
+ echo 'JSON input is empty!' >&2; exit 1
 fi
 
-ISSUER='.excluded/md/cursor'
+AI_SESSION_ID=$(printf '%s' "${JSON_INPUT}" | yq -eMr -p=json -o=json .conversation_id)
+if test $? -ne 0; then
+ echo 'Could not get conversation ID!' >&2; exit 1; fi
+
+AI_TURN_ID=$(printf '%s' "${JSON_INPUT}" | yq -eMr -p=json -o=json .generation_id)
+if test $? -ne 0; then
+ echo 'Could not get generation ID!' >&2; exit 1; fi
+
+POINTER="$(TZ='utc' LC_ALL=C date +%Y%m%d%H%M%S)-${AI_SESSION_ID:0:8}"
+
+AI_WORKDIR="$(pwd)"
+
+ISSUER="${AI_WORKDIR}/.excluded/json/${AI_NAME}"
 
 if test -d "${ISSUER}"; then
  mkdir -p "${ISSUER}/${FILE_DIR}"
- echo "${JSON_INPUT}" | yq .text > "${ISSUER}/${FILE_DIR}/cursor-${POINTER}.md"
-else
- echo "No dir \"${ISSUER}\"."
+ printf '%s' "${JSON_INPUT}" > "${ISSUER}/${FILE_DIR}/${AI_NAME}-${POINTER}.json"
+fi
+
+ISSUER="${AI_WORKDIR}/.excluded/md/${AI_NAME}"
+
+if test -d "${ISSUER}"; then
+ mkdir -p "${ISSUER}/${FILE_DIR}"
+ printf '%s' "${JSON_INPUT}" | yq -r -p=json -o=json .text > "${ISSUER}/${FILE_DIR}/${AI_NAME}-${POINTER}.md"
 fi
