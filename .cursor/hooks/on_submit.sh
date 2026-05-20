@@ -5,26 +5,26 @@ AI_NAME='cursor'
 JSON_INPUT="$(cat)"
 if test $? -ne 0; then
  echo 'Could not get JSON input!' >&2
- echo '{"continue":false}'; exit 1
+ echo '{"continue":false}'; exit 2
 elif -z "${JSON_INPUT}"; then
  echo 'JSON input is empty!' >&2
- echo '{"continue":false}'; exit 1
+ echo '{"continue":false}'; exit 2
 fi
 
 AI_SESSION_ID=$(printf '%s' "${JSON_INPUT}" | yq -eMr -p=json -o=json .conversation_id)
 if test $? -ne 0; then
  echo 'Could not get conversation ID!' >&2
- echo '{"continue":false}'; exit 1; fi
+ echo '{"continue":false}'; exit 2; fi
 
 AI_TURN_ID=$(printf '%s' "${JSON_INPUT}" | yq -eMr -p=json -o=json .generation_id)
 if test $? -ne 0; then
  echo 'Could not get generation ID!' >&2
- echo '{"continue":false}'; exit 1; fi
+ echo '{"continue":false}'; exit 2; fi
 
 USER_PROMPT=$(printf '%s' "${JSON_INPUT}" | yq -Mr -p=json -o=json '.prompt // ""')
 if test -z "${USER_PROMPT}"; then
  echo "No prompt!" >&2
- echo '{"continue":false}'; exit 1; fi
+ echo '{"continue":false}'; exit 2; fi
 
 AI_WORKDIR="$(pwd)"
 
