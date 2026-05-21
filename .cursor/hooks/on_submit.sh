@@ -6,7 +6,7 @@ JSON_INPUT="$(cat)"
 if test $? -ne 0; then
  echo 'Could not get JSON input!' >&2
  echo '{"continue":false}'; exit 2
-elif -z "${JSON_INPUT}"; then
+elif test -z "${JSON_INPUT}"; then
  echo 'JSON input is empty!' >&2
  echo '{"continue":false}'; exit 2
 fi

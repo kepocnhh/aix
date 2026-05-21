@@ -7,7 +7,7 @@ FILE_DIR="$(TZ='utc' LC_ALL=C date +%Y/%m/%d)"
 JSON_INPUT="$(cat)"
 if test $? -ne 0; then
  echo 'Could not get JSON input!' >&2; exit 1
-elif -z "${JSON_INPUT}"; then
+elif test -z "${JSON_INPUT}"; then
  echo 'JSON input is empty!' >&2; exit 1
 fi
 
