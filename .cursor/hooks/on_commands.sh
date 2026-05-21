@@ -11,9 +11,6 @@ elif test -z "${JSON_INPUT}"; then
  echo '{"permission":"deny"}'; exit 2
 fi
 
-POINTER="$(TZ='utc' LC_ALL=C date +%s%N)"
-printf '%s' "${JSON_INPUT}" > "/tmp/commands-${POINTER}.json" # todo
-
 AI_SESSION_ID=$(printf '%s' "${JSON_INPUT}" | yq -eMr -p=json -o=json .conversation_id)
 if test $? -ne 0; then
  echo 'Could not get conversation ID!' >&2
@@ -24,18 +21,29 @@ if test $? -ne 0; then
  echo 'Could not get generation ID!' >&2
  echo '{"permission":"deny"}'; exit 2; fi
 
-AI_WORKDIR=$(printf '%s' "${JSON_INPUT}" | yq -Mr -p=json -o=json .cwd)
+AI_WORKDIR="$(pwd)"
+if test $? != 0; then
+ echo "Get workdir error!" >&2
+ echo '{"permission":"deny"}'; exit 2
+elif [[ ! -d "${AI_WORKDIR}" ]]; then
+ echo "Workdir \"${AI_WORKDIR}\" error!" >&2
+ echo '{"permission":"deny"}'; exit 2
+fi
+
+COMMAND_WORKDIR=$(printf '%s' "${JSON_INPUT}" | yq -Mr -p=json -o=json '.cwd // ""')
 if test $? -ne 0; then
  echo 'Could not get workdir!' >&2
  echo '{"permission":"deny"}'; exit 2; fi
 
-AI_WORKDIR="$(realpath "${AI_WORKDIR}")"
-if test $? != 0; then
- echo "Realpath error!" >&2
- echo '{"permission":"deny"}'; exit 2; fi
-
-if [[ ! -d "${AI_WORKDIR}" ]]; then
- echo "Workdir \"${AI_WORKDIR}\" error!" >&2
- echo '{"permission":"deny"}'; exit 2; fi
+if test -n "${COMMAND_WORKDIR}"; then
+ COMMAND_WORKDIR="$(realpath "${COMMAND_WORKDIR}")"
+ if test $? != 0; then
+  echo "Realpath command error!" >&2
+  echo '{"permission":"deny"}'; exit 2
+ elif [[ ! -d "${COMMAND_WORKDIR}" ]]; then
+  echo "Workdir \"${COMMAND_WORKDIR}\" command error!" >&2
+  echo '{"permission":"deny"}'; exit 2
+ fi
+fi
 
 echo '{"permission":"allow"}'
