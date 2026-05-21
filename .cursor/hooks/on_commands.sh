@@ -66,20 +66,8 @@ if test -f "${ISSUER}"; then
  if [[ "${AI_TURN_ID}" != "${ACTUAL_TURN_ID}" ]]; then
   echo "Actual turn id \"${ACTUAL_TURN_ID}\", but expected \"${AI_TURN_ID}\"!" >&2
   echo '{"permission":"deny"}'; exit 2; fi
- AI_COMMANDS_SIZE=$(printf '%s' "${JSON_INPUT}" | yq -eMr -p=json -o=json '.commands | length')
- if test $? -ne 0; then
-  echo 'Could not get commands size!' >&2
-  echo '{"permission":"deny"}'; exit 2
- elif [[ ${AI_COMMANDS_SIZE} < 0 ]]; then
-  echo 'Wrong commands size!' >&2
-  echo '{"permission":"deny"}'; exit 2
- elif [[ ${AI_COMMANDS_SIZE} == 0 ]]; then
-  yq -i -p=yml -o=yml --arg AI_COMMAND "${AI_COMMAND}" \
-   '.commands += [{"value": $AI_COMMAND}]' "${ISSUER}"
- else
-  AI_COMMAND="${AI_COMMAND}" \
-   yq -i -p=yml -o=yml ".commands[-1].value=strenv(AI_COMMAND)" "${ISSUER}"
- fi
+ yq -i -p=yml -o=yml --arg AI_COMMAND "${AI_COMMAND}" \
+  '.commands += [{"value": $AI_COMMAND}]' "${ISSUER}"
 fi
 
 if [[ "${AI_COMMAND}" =~ \>|\>\> ]]; then
