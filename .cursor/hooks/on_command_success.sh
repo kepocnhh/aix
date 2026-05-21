@@ -54,5 +54,5 @@ if test -f "${ISSUER}"; then
   AI_COMMAND_OUTPUT="${AI_COMMAND_OUTPUT}" \
    yq -i -p=yml -o=yml ".commands[-1].output=strenv(AI_COMMAND_OUTPUT)" "${ISSUER}"
  fi
- yq -i -p=yml -o=yml '.commands[-1].status=allowed' "${ISSUER}"
+ yq -i -p=yml -o=yml '.commands[-1].status="allowed"' "${ISSUER}"
 fi
