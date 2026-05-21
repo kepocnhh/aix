@@ -66,8 +66,8 @@ if test -f "${ISSUER}"; then
  if [[ "${AI_TURN_ID}" != "${ACTUAL_TURN_ID}" ]]; then
   echo "Actual turn id \"${ACTUAL_TURN_ID}\", but expected \"${AI_TURN_ID}\"!" >&2
   echo '{"permission":"deny"}'; exit 2; fi
- yq -i -p=yml -o=yml --arg AI_COMMAND "${AI_COMMAND}" \
-  '.commands += [{"value": $AI_COMMAND}]' "${ISSUER}"
+ AI_COMMAND="${AI_COMMAND}" \
+  yq -i -p=yml -o=yml '.commands += [{"value": strenv(AI_COMMAND)]' "${ISSUER}"
 fi
 
 if [[ "${AI_COMMAND}" =~ \>|\>\> ]]; then
