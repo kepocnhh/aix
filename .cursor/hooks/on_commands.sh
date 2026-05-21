@@ -55,15 +55,6 @@ elif test -z "${AI_COMMAND}"; then
  echo '{"permission":"deny"}'; exit 2
 fi
 
-AI_COMMAND_ID="$(xxd -l 4 -p /dev/urandom)"
-if test $? -ne 0; then
- echo 'Could not get command ID!' >&2
- echo '{"permission":"deny"}'; exit 2
-elif [[ "${#AI_COMMAND_ID}" != '4' ]]; then
- echo 'Wrong command ID!' >&2
- echo '{"permission":"deny"}'; exit 2
-fi
-
 ISSUER="${AI_WORKDIR}/.excluded/yml/${AI_NAME}/${AI_NAME}-${AI_SESSION_ID}-${AI_TURN_ID}.yml"
 
 if test -f "${ISSUER}"; then
@@ -75,15 +66,23 @@ if test -f "${ISSUER}"; then
  if [[ "${AI_TURN_ID}" != "${ACTUAL_TURN_ID}" ]]; then
   echo "Actual turn id \"${ACTUAL_TURN_ID}\", but expected \"${AI_TURN_ID}\"!" >&2
   echo '{"permission":"deny"}'; exit 2; fi
- AI_COMMAND="${AI_COMMAND}" \
-  yq -i -p=yml -o=yml ".commands.${AI_COMMAND_ID}.value=strenv(AI_COMMAND)" "${ISSUER}"
+ AI_COMMANDS_SIZE=$(printf '%s' "${JSON_INPUT}" | yq -eMr -p=json -o=json '.commands | length')
+ if test $? -ne 0; then
+  echo 'Could not get commands size!' >&2
+  echo '{"permission":"deny"}'; exit 2
+ elif [[ ${AI_COMMANDS_SIZE} < 0 ]]; then
+  echo 'Wrong commands size!' >&2
+  echo '{"permission":"deny"}'; exit 2
+ elif [[ ${AI_COMMANDS_SIZE} == 0 ]]; then
+  yq -i -p=yml -o=yml --arg AI_COMMAND "${AI_COMMAND}" \
+   '.commands += [{"value": $AI_COMMAND}]' "${ISSUER}"
+ else
+  AI_COMMAND="${AI_COMMAND}" \
+   yq -i -p=yml -o=yml ".commands[-1].value=strenv(AI_COMMAND)" "${ISSUER}"
+ fi
 fi
 
 if [[ "${AI_COMMAND}" =~ \>|\>\> ]]; then
  echo '{"permission":"ask"}'; exit 0; fi
-
-if test -f "${ISSUER}"; then
- yq -i -p=yml -o=yml ".commands.${AI_COMMAND_ID}.allowed=true" "${ISSUER}"
-fi
 
 echo '{"permission":"allow"}'

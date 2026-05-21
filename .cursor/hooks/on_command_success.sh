@@ -1,0 +1,58 @@
+#!/usr/local/bin/bash
+
+AI_NAME='cursor'
+
+JSON_INPUT="$(cat)"
+if test $? -ne 0; then
+ echo 'Could not get JSON input!' >&2; exit 1
+elif test -z "${JSON_INPUT}"; then
+ echo 'JSON input is empty!' >&2; exit 1
+fi
+
+AI_SESSION_ID=$(printf '%s' "${JSON_INPUT}" | yq -eMr -p=json -o=json .conversation_id)
+if test $? -ne 0; then
+ echo 'Could not get conversation ID!' >&2; exit 1; fi
+
+AI_TURN_ID=$(printf '%s' "${JSON_INPUT}" | yq -eMr -p=json -o=json .generation_id)
+if test $? -ne 0; then
+ echo 'Could not get generation ID!' >&2; exit 1; fi
+
+AI_WORKDIR="$(pwd)"
+if test $? != 0; then
+ echo "Get workdir error!" >&2; exit 1
+elif [[ ! -d "${AI_WORKDIR}" ]]; then
+ echo "Workdir \"${AI_WORKDIR}\" error!" >&2; exit 1
+fi
+
+AI_COMMAND=$(printf '%s' "${JSON_INPUT}" | yq -Mr -p=json -o=json '.command // ""')
+if test $? -ne 0; then
+ echo 'Could not get command!' >&2; exit 1
+elif test -z "${AI_COMMAND}"; then
+ echo 'Command is empty!' >&2; exit 1
+fi
+
+AI_COMMAND_OUTPUT=$(printf '%s' "${JSON_INPUT}" | yq -Mr -p=json -o=json '.output // ""')
+if test $? -ne 0; then
+ echo 'Could not get command output!' >&2; exit 1; fi
+
+ISSUER="${AI_WORKDIR}/.excluded/yml/${AI_NAME}/${AI_NAME}-${AI_SESSION_ID}-${AI_TURN_ID}.yml"
+
+if test -f "${ISSUER}"; then
+ ACTUAL_SESSION_ID=$(yq -r -p=yml -o=json .session_id "${ISSUER}")
+ if [[ "${AI_SESSION_ID}" != "${ACTUAL_SESSION_ID}" ]]; then
+  echo "Actual session id \"${ACTUAL_SESSION_ID}\", but expected \"${AI_SESSION_ID}\"!" >&2; exit 1; fi
+ ACTUAL_TURN_ID=$(yq -r -p=yml -o=json .turn_id "${ISSUER}")
+ if [[ "${AI_TURN_ID}" != "${ACTUAL_TURN_ID}" ]]; then
+  echo "Actual turn id \"${ACTUAL_TURN_ID}\", but expected \"${AI_TURN_ID}\"!" >&2; exit 1; fi
+ ACTUAL_COMMAND=$(yq -r -p=yml -o=json '.commands[-1].value' "${ISSUER}")
+ if test $? -ne 0; then
+  echo 'Could not get actual command!' >&2; exit 1
+ elif [[ "${AI_COMMAND}" != "${ACTUAL_COMMAND}" ]]; then
+  echo "Actual command \"${ACTUAL_COMMAND}\", but expected \"${AI_COMMAND}\"!" >&2; exit 1
+ fi
+ if test -n "${AI_COMMAND_OUTPUT}"; then
+  AI_COMMAND_OUTPUT="${AI_COMMAND_OUTPUT}" \
+   yq -i -p=yml -o=yml ".commands[-1].output=strenv(AI_COMMAND_OUTPUT)" "${ISSUER}"
+ fi
+ yq -i -p=yml -o=yml '.commands[-1].status=allowed' "${ISSUER}"
+fi
