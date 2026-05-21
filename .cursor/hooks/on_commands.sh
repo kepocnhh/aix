@@ -55,6 +55,15 @@ elif test -z "${AI_COMMAND}"; then
  echo '{"permission":"deny"}'; exit 2
 fi
 
+AI_COMMAND_ID="$(xxd -l 4 -p /dev/urandom)"
+if test $? -ne 0; then
+ echo 'Could not get command ID!' >&2
+ echo '{"permission":"deny"}'; exit 2
+elif [[ "${#AI_COMMAND_ID}" != '4' ]]; then
+ echo 'Wrong command ID!' >&2
+ echo '{"permission":"deny"}'; exit 2
+fi
+
 ISSUER="${AI_WORKDIR}/.excluded/yml/${AI_NAME}/${AI_NAME}-${AI_SESSION_ID}-${AI_TURN_ID}.yml"
 
 if test -f "${ISSUER}"; then
@@ -67,7 +76,14 @@ if test -f "${ISSUER}"; then
   echo "Actual turn id \"${ACTUAL_TURN_ID}\", but expected \"${AI_TURN_ID}\"!" >&2
   echo '{"permission":"deny"}'; exit 2; fi
  AI_COMMAND="${AI_COMMAND}" \
-  yq -i -p=yml -o=yml '.commands += [strenv(AI_COMMAND)]' "${ISSUER}"
+  yq -i -p=yml -o=yml ".commands.${AI_COMMAND_ID}.value=strenv(AI_COMMAND)" "${ISSUER}"
+fi
+
+if [[ "${AI_COMMAND}" =~ \>|\>\> ]]; then
+ echo '{"permission":"ask"}'; exit 0; fi
+
+if test -f "${ISSUER}"; then
+ yq -i -p=yml -o=yml ".commands.${AI_COMMAND_ID}.allowed=true" "${ISSUER}"
 fi
 
 echo '{"permission":"allow"}'
