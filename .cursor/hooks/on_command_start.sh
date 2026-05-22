@@ -48,7 +48,7 @@ AI_COMMAND_NAME=$(printf '%s' "${JSON_INPUT}" | yq -eMr -p=json -o=json .tool_na
 if test $? -ne 0; then
  echo 'Could not get command name!' >&2
  echo '{"permission":"deny"}'; exit 2
-elif test -z "${AI_COMMAND}"; then
+elif test -z "${AI_COMMAND_NAME}"; then
  echo 'Command name is empty!' >&2
  echo '{"permission":"deny"}'; exit 2
 fi
