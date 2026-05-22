@@ -55,21 +55,6 @@ elif test -z "${AI_COMMAND}"; then
  echo '{"permission":"deny"}'; exit 2
 fi
 
-ISSUER="${AI_WORKDIR}/.excluded/yml/${AI_NAME}/${AI_NAME}-${AI_SESSION_ID}-${AI_TURN_ID}.yml"
-
-if test -f "${ISSUER}"; then
- ACTUAL_SESSION_ID=$(yq -r -p=yml -o=json .session_id "${ISSUER}")
- if [[ "${AI_SESSION_ID}" != "${ACTUAL_SESSION_ID}" ]]; then
-  echo "Actual session id \"${ACTUAL_SESSION_ID}\", but expected \"${AI_SESSION_ID}\"!" >&2
-  echo '{"permission":"deny"}'; exit 2; fi
- ACTUAL_TURN_ID=$(yq -r -p=yml -o=json .turn_id "${ISSUER}")
- if [[ "${AI_TURN_ID}" != "${ACTUAL_TURN_ID}" ]]; then
-  echo "Actual turn id \"${ACTUAL_TURN_ID}\", but expected \"${AI_TURN_ID}\"!" >&2
-  echo '{"permission":"deny"}'; exit 2; fi
- AI_COMMAND="${AI_COMMAND}" \
-  yq -i -p=yml -o=yml '.commands += [{"value":strenv(AI_COMMAND)}]' "${ISSUER}"
-fi
-
 if [[ "${AI_COMMAND}" =~ \>|\>\> ]]; then
  echo '{"permission":"ask"}'; exit 0; fi
 
