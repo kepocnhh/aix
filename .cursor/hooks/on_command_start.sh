@@ -44,12 +44,12 @@ if test -n "${AI_COMMAND_WORKDIR}"; then
  fi
 fi
 
-AI_COMMAND=$(printf '%s' "${JSON_INPUT}" | yq -Mr -p=json -o=json '.tool_input.command // ""')
+AI_COMMAND_NAME=$(printf '%s' "${JSON_INPUT}" | yq -eMr -p=json -o=json .tool_name)
 if test $? -ne 0; then
- echo 'Could not get command!' >&2
+ echo 'Could not get command name!' >&2
  echo '{"permission":"deny"}'; exit 2
 elif test -z "${AI_COMMAND}"; then
- echo 'Command is empty!' >&2
+ echo 'Command name is empty!' >&2
  echo '{"permission":"deny"}'; exit 2
 fi
 
@@ -60,6 +60,17 @@ if test $? -ne 0; then
 elif test -z "${AI_COMMAND_ID}"; then
  echo 'Command ID is empty!' >&2
  echo '{"permission":"deny"}'; exit 2
+fi
+
+if test "${AI_COMMAND_NAME}" == 'Shell'; then
+ AI_COMMAND_SHELL=$(printf '%s' "${JSON_INPUT}" | yq -Mr -p=json -o=json '.tool_input.command // ""')
+ if test $? -ne 0; then
+  echo 'Could not get command!' >&2
+  echo '{"permission":"deny"}'; exit 2
+ elif test -z "${AI_COMMAND}"; then
+  echo 'Command is empty!' >&2
+  echo '{"permission":"deny"}'; exit 2
+ fi
 fi
 
 ISSUER="${AI_WORKDIR}/.excluded/yml/${AI_NAME}/${AI_NAME}-${AI_SESSION_ID}-${AI_TURN_ID}.yml"
@@ -73,8 +84,11 @@ if test -f "${ISSUER}"; then
  if [[ "${AI_TURN_ID}" != "${ACTUAL_TURN_ID}" ]]; then
   echo "Actual turn id \"${ACTUAL_TURN_ID}\", but expected \"${AI_TURN_ID}\"!" >&2
   echo '{"permission":"deny"}'; exit 2; fi
- AI_COMMAND="${AI_COMMAND}" \
-  yq -i -p=yml -o=yml ".commands.${AI_COMMAND_ID}.value=strenv(AI_COMMAND)" "${ISSUER}"
+ STR_VALUE="${AI_COMMAND_NAME}" \
+  yq -i -p=yml -o=yml ".commands.${AI_COMMAND_ID}.name=strenv(STR_VALUE)" "${ISSUER}"
+ if test -n "${AI_COMMAND_SHELL}"; then
+  STR_VALUE="${AI_COMMAND_SHELL}" \
+   yq -i -p=yml -o=yml ".commands.${AI_COMMAND_ID}.shell=strenv(STR_VALUE)" "${ISSUER}"; fi
 fi
 
 echo '{"permission":"allow"}'
