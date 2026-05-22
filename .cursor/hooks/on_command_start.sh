@@ -62,9 +62,7 @@ elif test -z "${AI_COMMAND_ID}"; then
  echo '{"permission":"deny"}'; exit 2
 fi
 
-POINTER="$(printf '%s' "${AI_SESSION_ID}-${AI_TURN_ID}-${AI_COMMAND_ID}" | openssl dgst -sha256 -binary | xxd -l 4 -c 8 -p)"
-
-ISSUER="${AI_WORKDIR}/.excluded/yml/${AI_NAME}/${AI_NAME}-${POINTER}.yml"
+ISSUER="${AI_WORKDIR}/.excluded/yml/${AI_NAME}/${AI_NAME}-${AI_SESSION_ID}-${AI_TURN_ID}.yml"
 
 if test -f "${ISSUER}"; then
  ACTUAL_SESSION_ID=$(yq -r -p=yml -o=json .session_id "${ISSUER}")
