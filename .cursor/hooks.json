@@ -19,15 +19,15 @@
         "timeout": 16
       }
     ],
-    "afterShellExecution": [
-      {
-        "command": "/usr/local/bin/bash -c \"cd ${CURSOR_PROJECT_DIR} && ~/.cursor/hooks/on_command_success.sh\"",
-        "timeout": 16
-      }
-    ],
     "preToolUse": [
       {
         "command": "/usr/local/bin/bash -c \"cd ${CURSOR_PROJECT_DIR} && ~/.cursor/hooks/on_command_start.sh\"",
+        "timeout": 16
+      }
+    ],
+    "postToolUse": [
+      {
+        "command": "/usr/local/bin/bash -c \"cd ${CURSOR_PROJECT_DIR} && ~/.cursor/hooks/on_command_finish.sh\"",
         "timeout": 16
       }
     ],

@@ -24,11 +24,31 @@ elif [[ ! -d "${AI_WORKDIR}" ]]; then
  echo "Workdir \"${AI_WORKDIR}\" error!" >&2; exit 1
 fi
 
+AI_COMMAND_WORKDIR=$(printf '%s' "${JSON_INPUT}" | yq -Mr -p=json -o=json '.tool_input.cwd // ""')
+if test $? -ne 0; then
+ echo 'Could not get workdir!' >&2; exit 1; fi
+
+if test -n "${AI_COMMAND_WORKDIR}"; then
+ AI_COMMAND_WORKDIR="$(realpath "${AI_COMMAND_WORKDIR}")"
+ if test $? != 0; then
+  echo "Realpath command error!" >&2; exit 1
+ elif [[ ! -d "${AI_COMMAND_WORKDIR}" ]]; then
+  echo "Workdir \"${AI_COMMAND_WORKDIR}\" command error!" >&2; exit 1
+ fi
+fi
+
 AI_COMMAND=$(printf '%s' "${JSON_INPUT}" | yq -Mr -p=json -o=json '.command // ""')
 if test $? -ne 0; then
  echo 'Could not get command!' >&2; exit 1
 elif test -z "${AI_COMMAND}"; then
  echo 'Command is empty!' >&2; exit 1
+fi
+
+AI_COMMAND_ID=$(printf '%s' "${JSON_INPUT}" | yq -eMr -p=json -o=json .tool_use_id)
+if test $? -ne 0; then
+ echo 'Could not get command ID!' >&2; exit 1
+elif test -z "${AI_COMMAND_ID}"; then
+ echo 'Command ID is empty!' >&2; exit 1
 fi
 
 AI_COMMAND_OUTPUT=$(printf '%s' "${JSON_INPUT}" | yq -Mr -p=json -o=json '.output // ""')
@@ -44,7 +64,7 @@ if test -f "${ISSUER}"; then
  ACTUAL_TURN_ID=$(yq -r -p=yml -o=json .turn_id "${ISSUER}")
  if [[ "${AI_TURN_ID}" != "${ACTUAL_TURN_ID}" ]]; then
   echo "Actual turn id \"${ACTUAL_TURN_ID}\", but expected \"${AI_TURN_ID}\"!" >&2; exit 1; fi
- ACTUAL_COMMAND=$(yq -r -p=yml -o=json '.commands[-1].value' "${ISSUER}")
+ ACTUAL_COMMAND=$(yq -r -p=yml -o=json ".commands.${AI_COMMAND_ID}.value" "${ISSUER}")
  if test $? -ne 0; then
   echo 'Could not get actual command!' >&2; exit 1
  elif [[ "${AI_COMMAND}" != "${ACTUAL_COMMAND}" ]]; then
@@ -52,7 +72,6 @@ if test -f "${ISSUER}"; then
  fi
  if test -n "${AI_COMMAND_OUTPUT}"; then
   AI_COMMAND_OUTPUT="${AI_COMMAND_OUTPUT}" \
-   yq -i -p=yml -o=yml ".commands[-1].output=strenv(AI_COMMAND_OUTPUT)" "${ISSUER}"
+   yq -i -p=yml -o=yml ".commands.${AI_COMMAND_OUTPUT}.value=strenv(AI_COMMAND_OUTPUT)" "${ISSUER}"
  fi
- yq -i -p=yml -o=yml '.commands[-1].status="allowed"' "${ISSUER}"
 fi
