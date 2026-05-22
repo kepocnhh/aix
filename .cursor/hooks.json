@@ -31,12 +31,6 @@
         "timeout": 16
       }
     ],
-    "postToolUseFailure": [
-      {
-        "command": "/usr/local/bin/bash -c \"cd ${CURSOR_PROJECT_DIR} && ~/.cursor/hooks/on_command_finish.sh\"",
-        "timeout": 16
-      }
-    ],
     "sessionEnd": []
   }
 }

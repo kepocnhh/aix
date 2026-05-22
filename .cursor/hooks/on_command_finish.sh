@@ -67,13 +67,6 @@ elif test -z "${AI_COMMAND_OUTPUT}"; then
  echo 'Command output is empty!' >&2; exit 1
 fi
 
-AI_COMMAND_STATUS=$(printf '%s' "${JSON_INPUT}" | yq -Mr -p=json -o=json '.failure_type // "allowed"')
-if test $? -ne 0; then
- echo 'Could not get command status!' >&2; exit 1
-elif test -z "${AI_COMMAND_STATUS}"; then
- echo 'Command status is empty!' >&2; exit 1
-fi
-
 ISSUER="${AI_WORKDIR}/.excluded/yml/${AI_NAME}/${AI_NAME}-${AI_SESSION_ID}-${AI_TURN_ID}.yml"
 
 if test -f "${ISSUER}"; then
@@ -91,6 +84,4 @@ if test -f "${ISSUER}"; then
   if [[ "${AI_COMMAND_SHELL}" != "${ACTUAL_COMMAND_SHELL}" ]]; then
    echo "Actual command shell \"${ACTUAL_COMMAND_SHELL}\", but expected \"${AI_COMMAND_SHELL}\"!" >&2; exit 1;fi
  fi
- STR_VALUE="${AI_COMMAND_STATUS}" \
-  yq -i -p=yml -o=yml ".commands.${AI_COMMAND_ID}.status=strenv(STR_VALUE)" "${ISSUER}"
 fi
