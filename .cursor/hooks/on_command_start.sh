@@ -67,7 +67,7 @@ if test "${AI_COMMAND_NAME}" == 'Shell'; then
  if test $? -ne 0; then
   echo 'Could not get command!' >&2
   echo '{"permission":"deny"}'; exit 2
- elif test -z "${AI_COMMAND}"; then
+ elif test -z "${AI_COMMAND_SHELL}"; then
   echo 'Command is empty!' >&2
   echo '{"permission":"deny"}'; exit 2
  fi
