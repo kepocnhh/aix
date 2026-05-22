@@ -73,6 +73,8 @@ if test "${AI_COMMAND_NAME}" == 'Shell'; then
  fi
 fi
 
+AI_COMMAND_TIMESTAMP=$(TZ='utc' LC_ALL=C date +%s)
+
 ISSUER="${AI_WORKDIR}/.excluded/yml/${AI_NAME}/${AI_NAME}-${AI_SESSION_ID}-${AI_TURN_ID}.yml"
 
 if test -f "${ISSUER}"; then
@@ -84,6 +86,7 @@ if test -f "${ISSUER}"; then
  if [[ "${AI_TURN_ID}" != "${ACTUAL_TURN_ID}" ]]; then
   echo "Actual turn id \"${ACTUAL_TURN_ID}\", but expected \"${AI_TURN_ID}\"!" >&2
   echo '{"permission":"deny"}'; exit 2; fi
+ yq -i -p=yml -o=yml ".commands.${AI_COMMAND_ID}.timestamp=${AI_COMMAND_TIMESTAMP}" "${ISSUER}"
  STR_VALUE="${AI_COMMAND_NAME}" \
   yq -i -p=yml -o=yml ".commands.${AI_COMMAND_ID}.name=strenv(STR_VALUE)" "${ISSUER}"
  if test -n "${AI_COMMAND_SHELL}"; then
