@@ -87,9 +87,9 @@ if test -f "${ISSUER}"; then
  if [[ "${AI_COMMAND_NAME}" != "${ACTUAL_COMMAND_NAME}" ]]; then
   echo "Actual command name \"${ACTUAL_COMMAND}\", but expected \"${AI_COMMAND}\"!" >&2; exit 1; fi
  if test "${AI_COMMAND_NAME}" == 'Shell'; then
-  ACTUAL_COMMAND=$(yq -r -p=yml -o=json ".commands.${AI_COMMAND_ID}.value" "${ISSUER}")
-  if [[ "${AI_COMMAND}" != "${ACTUAL_COMMAND}" ]]; then
-   echo "Actual command \"${ACTUAL_COMMAND}\", but expected \"${AI_COMMAND}\"!" >&2; exit 1;fi
+  ACTUAL_COMMAND_SHELL=$(yq -r -p=yml -o=json ".commands.${AI_COMMAND_ID}.shell" "${ISSUER}")
+  if [[ "${AI_COMMAND_SHELL}" != "${ACTUAL_COMMAND_SHELL}" ]]; then
+   echo "Actual command shell \"${ACTUAL_COMMAND_SHELL}\", but expected \"${AI_COMMAND_SHELL}\"!" >&2; exit 1;fi
  fi
  STR_VALUE="${AI_COMMAND_STATUS}" \
   yq -i -p=yml -o=yml ".commands.${AI_COMMAND_ID}.status=strenv(STR_VALUE)" "${ISSUER}"
