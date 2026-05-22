@@ -51,11 +51,18 @@ elif test -z "${AI_COMMAND_ID}"; then
  echo 'Command ID is empty!' >&2; exit 1
 fi
 
-AI_COMMAND_OUTPUT=$(printf '%s' "${JSON_INPUT}" | yq -eMr -p=json -o=json .tool_output)
+AI_COMMAND_OUTPUT=$(printf '%s' "${JSON_INPUT}" | yq -Mr -p=json -o=json '.tool_output // null')
 if test $? -ne 0; then
  echo 'Could not get command output!' >&2; exit 1
 elif test -z "${AI_COMMAND_OUTPUT}"; then
  echo 'Command output is empty!' >&2; exit 1
+fi
+
+AI_COMMAND_STATUS=$(printf '%s' "${JSON_INPUT}" | yq -Mr -p=json -o=json '.failure_type // "allowed"')
+if test $? -ne 0; then
+ echo 'Could not get command status!' >&2; exit 1
+elif test -z "${AI_COMMAND_OUTPUT}"; then
+ echo 'Command status is empty!' >&2; exit 1
 fi
 
 ISSUER="${AI_WORKDIR}/.excluded/yml/${AI_NAME}/${AI_NAME}-${AI_SESSION_ID}-${AI_TURN_ID}.yml"
@@ -73,5 +80,6 @@ if test -f "${ISSUER}"; then
  elif [[ "${AI_COMMAND}" != "${ACTUAL_COMMAND}" ]]; then
   echo "Actual command \"${ACTUAL_COMMAND}\", but expected \"${AI_COMMAND}\"!" >&2; exit 1
  fi
- yq -i -p=yml -o=yml ".commands.${AI_COMMAND_ID}.status=\"allowed\"" "${ISSUER}"
+ AI_COMMAND_STATUS="${AI_COMMAND_STATUS}" \
+  yq -i -p=yml -o=yml ".commands.${AI_COMMAND_ID}.status=strenv(AI_COMMAND_STATUS)" "${ISSUER}"
 fi
