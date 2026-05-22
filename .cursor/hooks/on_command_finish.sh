@@ -37,7 +37,7 @@ if test -n "${AI_COMMAND_WORKDIR}"; then
  fi
 fi
 
-AI_COMMAND=$(printf '%s' "${JSON_INPUT}" | yq -Mr -p=json -o=json '.command // ""')
+AI_COMMAND=$(printf '%s' "${JSON_INPUT}" | yq -Mr -p=json -o=json '.tool_input.command // ""')
 if test $? -ne 0; then
  echo 'Could not get command!' >&2; exit 1
 elif test -z "${AI_COMMAND}"; then
@@ -51,7 +51,7 @@ elif test -z "${AI_COMMAND_ID}"; then
  echo 'Command ID is empty!' >&2; exit 1
 fi
 
-AI_COMMAND_OUTPUT=$(printf '%s' "${JSON_INPUT}" | yq -Mr -p=json -o=json '.output // ""')
+AI_COMMAND_OUTPUT=$(printf '%s' "${JSON_INPUT}" | yq -Mr -p=json -o=json '.tool_output.output // ""' | yq -Mr -p=json -o=json '.output // ""')
 if test $? -ne 0; then
  echo 'Could not get command output!' >&2; exit 1; fi
 
