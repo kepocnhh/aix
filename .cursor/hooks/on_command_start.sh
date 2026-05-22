@@ -13,11 +13,13 @@ fi
 
 AI_SESSION_ID=$(printf '%s' "${JSON_INPUT}" | yq -eMr -p=json -o=json .conversation_id)
 if test $? -ne 0; then
- echo 'Could not get conversation ID!' >&2; exit 1; fi
+ echo 'Could not get conversation ID!' >&2
+ echo '{"permission":"deny"}'; exit 2; fi
 
 AI_TURN_ID=$(printf '%s' "${JSON_INPUT}" | yq -eMr -p=json -o=json .generation_id)
 if test $? -ne 0; then
- echo 'Could not get generation ID!' >&2; exit 1; fi
+ echo 'Could not get generation ID!' >&2
+ echo '{"permission":"deny"}'; exit 2; fi
 
 AI_WORKDIR="$(pwd)"
 if test $? != 0; then

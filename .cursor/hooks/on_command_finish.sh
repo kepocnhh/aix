@@ -78,7 +78,7 @@ if test -f "${ISSUER}"; then
   echo "Actual turn id \"${ACTUAL_TURN_ID}\", but expected \"${AI_TURN_ID}\"!" >&2; exit 1; fi
  ACTUAL_COMMAND_NAME=$(yq -r -p=yml -o=json ".commands.${AI_COMMAND_ID}.name" "${ISSUER}")
  if [[ "${AI_COMMAND_NAME}" != "${ACTUAL_COMMAND_NAME}" ]]; then
-  echo "Actual command name \"${ACTUAL_COMMAND}\", but expected \"${AI_COMMAND}\"!" >&2; exit 1; fi
+  echo "Actual command name \"${ACTUAL_COMMAND_NAME}\", but expected \"${AI_COMMAND_NAME}\"!" >&2; exit 1; fi
  if test "${AI_COMMAND_NAME}" == 'Shell'; then
   ACTUAL_COMMAND_SHELL=$(yq -r -p=yml -o=json ".commands.${AI_COMMAND_ID}.shell" "${ISSUER}")
   if [[ "${AI_COMMAND_SHELL}" != "${ACTUAL_COMMAND_SHELL}" ]]; then
