@@ -35,15 +35,6 @@ if test $? -ne 0; then
  echo 'Could not get generation ID!' >&2
  echo '{"permission":"deny"}'; exit 2; fi
 
-AI_COMMAND_NAME=$(printf '%s' "${JSON_INPUT}" | yq -eMr -p=json -o=json .tool_name)
-if test $? -ne 0; then
- echo 'Could not get command name!' >&2
- echo '{"permission":"deny"}'; exit 2
-elif test "${AI_COMMAND_NAME}" != 'Shell'; then
- echo "Command name \"${AI_COMMAND_NAME}\" is not supported!" >&2
- echo '{"permission":"deny"}'; exit 2
-fi
-
 AI_COMMAND_WORKDIR=$(printf '%s' "${JSON_INPUT}" | yq -Mr -p=json -o=json '.cwd // ""')
 if test $? -ne 0; then
  echo 'Could not get workdir!' >&2
