@@ -6,7 +6,7 @@ if test -z "${AI_WORKDIR}"; then
  echo 'No workdir!' >&2
  printf '{"continue":false}'; exit 2; fi
 
-AI_WORKDIR="$(realpath -e "${AI_WORKDIR}" &> /dev/null)"
+AI_WORKDIR="$(realpath "${AI_WORKDIR}" 2> /dev/null)"
 if test $? != 0; then
  echo 'Realpath workdir error!' >&2
  printf '{"continue":false}'; exit 2
