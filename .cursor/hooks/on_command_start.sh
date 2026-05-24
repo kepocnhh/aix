@@ -4,8 +4,7 @@ AI_NAME='cursor'
 
 if test -z "${AI_WORKDIR}"; then
  echo 'No workdir!' >&2
- printf '%s' '{"permission":"deny"}'; exit 2
-fi
+ printf '%s' '{"permission":"deny"}'; exit 2; fi
 
 AI_WORKDIR="$(realpath "${AI_WORKDIR}")"
 if test $? != 0; then
