@@ -9,8 +9,8 @@ fi
 
 AI_WORKDIR="$(realpath "${AI_WORKDIR}")"
 if test $? != 0; then
- echo "Realpath workdir error!" >&2
- echo '{"permission":"deny"}'; exit 2
+ STR_VALUE='Realpath workdir error!' \
+  yq -nM -p=json -o=json '{"user_message":strenv(STR_VALUE),"permission":"deny"}'; exit 2
 elif [[ ! -d "${AI_WORKDIR}" ]]; then
  echo "Workdir \"${AI_WORKDIR}\" error!" >&2
  echo '{"permission":"deny"}'; exit 2
@@ -88,8 +88,8 @@ case "${AI_COMMAND_NAME}" in
   elif test -n "${AI_COMMAND_WORKDIR}"; then
    AI_COMMAND_WORKDIR="$(realpath "${AI_COMMAND_WORKDIR}")"
    if test $? != 0; then
-    echo "Realpath command workdir error!" >&2
-    echo '{"permission":"deny"}'; exit 2
+    STR_VALUE='Realpath command workdir error!' \
+     yq -nM -p=json -o=json '{"user_message":strenv(STR_VALUE),"permission":"deny"}'; exit 2
    elif [[ ! -d "${AI_COMMAND_WORKDIR}" ]]; then
     echo "Workdir \"${AI_COMMAND_WORKDIR}\" command error!" >&2
     echo '{"permission":"deny"}'; exit 2
@@ -102,8 +102,8 @@ case "${AI_COMMAND_NAME}" in
    echo '{"permission":"deny"}'; exit 2; fi
   AI_COMMAND_FILE_PATH="$(realpath "${AI_COMMAND_FILE_PATH}")"
   if test $? != 0; then
-   echo "Realpath file error!" >&2
-   echo '{"permission":"deny"}'; exit 2; fi;;
+   STR_VALUE='Realpath file error!' \
+    yq -nM -p=json -o=json '{"user_message":strenv(STR_VALUE),"permission":"deny"}'; exit 2; fi;;
 esac
 
 if test -f "${ISSUER}"; then
