@@ -2,6 +2,20 @@
 
 AI_NAME='cursor'
 
+if test -z "${AI_WORKDIR}"; then
+ echo 'No workdir!' >&2
+ echo '{"permission":"deny"}'; exit 2
+fi
+
+AI_WORKDIR="$(realpath "${AI_WORKDIR}")"
+if test $? != 0; then
+ echo "Realpath workdir error!" >&2
+ echo '{"permission":"deny"}'; exit 2
+elif [[ ! -d "${AI_WORKDIR}" ]]; then
+ echo "Workdir \"${AI_WORKDIR}\" error!" >&2
+ echo '{"permission":"deny"}'; exit 2
+fi
+
 FILE_DIR="$(TZ='utc' LC_ALL=C date +%Y/%m/%d)"
 
 JSON_INPUT="$(cat)"
@@ -20,8 +34,6 @@ if test $? -ne 0; then
  echo 'Could not get generation ID!' >&2; exit 1; fi
 
 POINTER="$(TZ='utc' LC_ALL=C date +%Y%m%d%H%M%S)-${AI_SESSION_ID:0:8}"
-
-AI_WORKDIR="$(pwd)"
 
 ISSUER="${AI_WORKDIR}/.excluded/json/${AI_NAME}"
 
@@ -50,6 +62,6 @@ if test -f "${ISSUER}"; then
  ACTUAL_TURN_ID=$(yq -r -p=yml -o=json .turn_id "${ISSUER}")
  if [[ "${AI_TURN_ID}" != "${ACTUAL_TURN_ID}" ]]; then
   echo "Actual turn id \"${ACTUAL_TURN_ID}\", but expected \"${AI_TURN_ID}\"!" >&2; exit 1; fi
- AI_RESPONSE="${AI_RESPONSE}" \
-  yq -M -i -p yml -o yml '.response=strenv(AI_RESPONSE)' "${ISSUER}"
+ STR_VALUE="${AI_RESPONSE}" \
+  yq -i -p=yml -o=yml '.response=strenv(STR_VALUE)' "${ISSUER}"
 fi

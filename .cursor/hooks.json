@@ -9,7 +9,7 @@
     ],
     "afterAgentResponse": [
       {
-        "command": "/usr/local/bin/bash -c \"cd ${CURSOR_PROJECT_DIR} && ~/.cursor/hooks/on_response.sh\"",
+        "command": "/usr/local/bin/bash -c \"cd '${CURSOR_PROJECT_DIR}' && AI_WORKDIR='${CURSOR_PROJECT_DIR}' ~/.cursor/hooks/on_response.sh\"",
         "timeout": 16
       }
     ],
