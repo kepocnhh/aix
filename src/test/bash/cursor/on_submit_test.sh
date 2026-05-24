@@ -30,15 +30,35 @@ if test "${ACTUAL_VALUE}" != 'No workdir!'; then
 :> "${STDOUT}"
 :> "${STDERR}"
 
-AI_WORKDIR='/foo'
-AI_WORKDIR="${AI_WORKDIR}" "${SCRIPT}" >"${STDOUT}" 2>"${STDERR}"; CODE=$?
+TMP_DIR="$(realpath "$(mktemp -d)")"
+rm -rf "${TMP_DIR}"
+AI_WORKDIR="${TMP_DIR}" "${SCRIPT}" >"${STDOUT}" 2>"${STDERR}"; CODE=$?
 if test "${CODE}" != '2'; then
  echo "Code(${CODE}) error!" >&2; exit 1; fi
 ACTUAL_VALUE="$(<"${STDOUT}")"
 if test "${ACTUAL_VALUE}" != '{"continue":false}'; then
  echo "Actual value(${#ACTUAL_VALUE}) is: \"${ACTUAL_VALUE}\"!" >&2; exit 1; fi
 ACTUAL_VALUE="$(<"${STDERR}")"
-if test "${ACTUAL_VALUE}" != "Workdir \"${AI_WORKDIR}\" error!"; then
+if test "${ACTUAL_VALUE}" != "Workdir \"${TMP_DIR}\" error!"; then
+ echo "Actual value(${#ACTUAL_VALUE}) is: \"${ACTUAL_VALUE}\"!" >&2; exit 1; fi
+
+:> "${STDOUT}"
+:> "${STDERR}"
+
+TMP_DIR="$(mktemp)"
+rm "${TMP_DIR}"
+ln -sf "${TMP_DIR}" "${TMP_DIR}"
+AI_WORKDIR="${TMP_DIR}" "${SCRIPT}" >"${STDOUT}" 2>"${STDERR}"; CODE=$?
+if test "${CODE}" != '2'; then
+ echo "Code(${CODE}) error!" >&2; exit 1; fi
+ACTUAL_VALUE="$(<"${STDOUT}")"
+if test "${ACTUAL_VALUE}" != '{"continue":false}'; then
+ echo "Actual value(${#ACTUAL_VALUE}) is: \"${ACTUAL_VALUE}\"!" >&2; exit 1; fi
+ACTUAL_VALUE="$(<"${STDERR}")"
+if test "${ACTUAL_VALUE}" != 'Realpath workdir error!'; then
  echo "Actual value(${#ACTUAL_VALUE}) is: \"${ACTUAL_VALUE}\"!" >&2; exit 1; fi
 
 echo 'Not implemented!' >&2; exit 1
+
+rm "${STDOUT}"
+rm "${STDERR}"
