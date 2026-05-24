@@ -2,4 +2,5 @@
 !/.codex
 !/.cursor
 !.gitignore
+!assemble.sh
 !README.md
