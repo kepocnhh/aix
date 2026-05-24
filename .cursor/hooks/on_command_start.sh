@@ -2,6 +2,20 @@
 
 AI_NAME='cursor'
 
+if test -z "${AI_WORKDIR}"; then
+ echo 'No workdir!' >&2
+ echo '{"permission":"deny"}'; exit 2
+fi
+
+AI_WORKDIR="$(realpath "${AI_WORKDIR}")"
+if test $? != 0; then
+ echo "Realpath workdir error!" >&2
+ echo '{"permission":"deny"}'; exit 2
+elif [[ ! -d "${AI_WORKDIR}" ]]; then
+ echo "Workdir \"${AI_WORKDIR}\" error!" >&2
+ echo '{"permission":"deny"}'; exit 2
+fi
+
 JSON_INPUT="$(cat)"
 if test $? -ne 0; then
  echo 'Could not get JSON input!' >&2
@@ -20,15 +34,6 @@ AI_TURN_ID=$(printf '%s' "${JSON_INPUT}" | yq -eMr -p=json -o=json .generation_i
 if test $? -ne 0; then
  echo 'Could not get generation ID!' >&2
  echo '{"permission":"deny"}'; exit 2; fi
-
-AI_WORKDIR="$(pwd)"
-if test $? != 0; then
- echo "Get workdir error!" >&2
- echo '{"permission":"deny"}'; exit 2
-elif [[ ! -d "${AI_WORKDIR}" ]]; then
- echo "Workdir \"${AI_WORKDIR}\" error!" >&2
- echo '{"permission":"deny"}'; exit 2
-fi
 
 AI_COMMAND_WORKDIR=$(printf '%s' "${JSON_INPUT}" | yq -Mr -p=json -o=json '.tool_input.cwd // ""')
 if test $? -ne 0; then
@@ -89,6 +94,10 @@ if test -f "${ISSUER}"; then
   echo "Actual turn id \"${ACTUAL_TURN_ID}\", but expected \"${AI_TURN_ID}\"!" >&2
   echo '{"permission":"deny"}'; exit 2; fi
  yq -i -p=yml -o=yml ".commands.${AI_COMMAND_ID}.timestamp=${AI_COMMAND_TIMESTAMP}" "${ISSUER}"
+ if test -n "${AI_COMMAND_WORKDIR}"; then
+  STR_VALUE="${AI_COMMAND_WORKDIR}" \
+   yq -i -p=yml -o=yml ".commands.${AI_COMMAND_ID}.workdir=strenv(STR_VALUE)" "${ISSUER}"
+ fi
  STR_VALUE="${AI_COMMAND_NAME}" \
   yq -i -p=yml -o=yml ".commands.${AI_COMMAND_ID}.name=strenv(STR_VALUE)" "${ISSUER}"
  if test -n "${AI_COMMAND_SHELL}"; then
