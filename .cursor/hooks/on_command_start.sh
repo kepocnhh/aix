@@ -3,11 +3,14 @@
 AI_NAME='cursor'
 
 if test -z "${AI_WORKDIR}"; then
- printf '%s' '{"user_message":"No workdir!","permission":"deny"}'; exit 2; fi
+ echo 'No workdir!' >&2
+ echo '{"permission":"deny"}'; exit 2
+fi
 
 AI_WORKDIR="$(realpath "${AI_WORKDIR}")"
 if test $? != 0; then
- printf '%s' '{"user_message":"Realpath workdir error!","permission":"deny"}'; exit 2
+ echo 'Realpath workdir error!' >&2
+ printf '%s' '{"permission":"deny"}'; exit 2
 elif [[ ! -d "${AI_WORKDIR}" ]]; then
  echo "Workdir \"${AI_WORKDIR}\" error!" >&2
  printf '%s' '{"permission":"deny"}'; exit 2
@@ -15,31 +18,39 @@ fi
 
 JSON_INPUT="$(cat)"
 if test $? -ne 0; then
- printf '%s' '{"user_message":"Could not get JSON input!","permission":"deny"}'; exit 2
+ echo 'Could not get JSON input!' >&2
+ printf '%s' '{"permission":"deny"}'; exit 2
 elif test -z "${JSON_INPUT}"; then
- printf '%s' '{"user_message":"JSON input is empty!","permission":"deny"}'; exit 2
+ echo 'JSON input is empty!' >&2
+ printf '%s' '{"permission":"deny"}'; exit 2
 fi
 
 AI_SESSION_ID=$(printf '%s' "${JSON_INPUT}" | yq -eMr -p=json -o=json .conversation_id)
 if test $? -ne 0; then
- printf '%s' '{"user_message":"Could not get conversation ID!","permission":"deny"}'; exit 2; fi
+ echo 'Could not get conversation ID!' >&2
+ printf '%s' '{"permission":"deny"}'; exit 2; fi
 
 AI_TURN_ID=$(printf '%s' "${JSON_INPUT}" | yq -eMr -p=json -o=json .generation_id)
 if test $? -ne 0; then
- printf '%s' '{"user_message":"Could not get generation ID!","permission":"deny"}'; exit 2; fi
+ echo 'Could not get generation ID!' >&2
+ printf '%s' '{"permission":"deny"}'; exit 2; fi
 
 AI_COMMAND_NAME=$(printf '%s' "${JSON_INPUT}" | yq -eMr -p=json -o=json .tool_name)
 if test $? -ne 0; then
- printf '%s' '{"user_message":"Could not get command name!","permission":"deny"}'; exit 2
+ echo 'Could not get command name!' >&2
+ printf '%s' '{"permission":"deny"}'; exit 2
 elif test -z "${AI_COMMAND_NAME}"; then
- printf '%s' '{"user_message":"Command name is empty!","permission":"deny"}'; exit 2
+ echo 'Command name is empty!' >&2
+ printf '%s' '{"permission":"deny"}'; exit 2
 fi
 
 AI_COMMAND_ID=$(printf '%s' "${JSON_INPUT}" | yq -eMr -p=json -o=json .tool_use_id)
 if test $? -ne 0; then
- printf '%s' '{"user_message":"Could not get command ID!","permission":"deny"}'; exit 2
+ echo 'Could not get command ID!' >&2
+ printf '%s' '{"permission":"deny"}'; exit 2
 elif test -z "${AI_COMMAND_ID}"; then
- printf '%s' '{"user_message":"Command ID is empty!","permission":"deny"}'; exit 2
+ echo 'Command ID is empty!' >&2
+ printf '%s' '{"permission":"deny"}'; exit 2
 fi
 
 AI_COMMAND_TIMESTAMP=$(TZ='utc' LC_ALL=C date +%s%3N)
@@ -64,17 +75,21 @@ case "${AI_COMMAND_NAME}" in
  'Shell')
   AI_COMMAND_SHELL=$(printf '%s' "${JSON_INPUT}" | yq -Mr -p=json -o=json '.tool_input.command // ""')
   if test $? -ne 0; then
-   printf '%s' '{"user_message":"Could not get command shell!","permission":"deny"}'; exit 2
+   echo 'Could not get command shell!' >&2
+   printf '%s' '{"permission":"deny"}'; exit 2
   elif test -z "${AI_COMMAND_SHELL}"; then
-   printf '%s' '{"user_message":"Command shell is empty!","permission":"deny"}'; exit 2
+   echo 'Command shell is empty!' >&2
+   printf '%s' '{"permission":"deny"}'; exit 2
   fi
   AI_COMMAND_WORKDIR=$(printf '%s' "${JSON_INPUT}" | yq -Mr -p=json -o=json '.tool_input.cwd // ""')
   if test $? -ne 0; then
-   printf '%s' '{"user_message":"Could not get command workdir!","permission":"deny"}'; exit 2
+   echo 'Could not get command workdir!' >&2
+   printf '%s' '{"permission":"deny"}'; exit 2
   elif test -n "${AI_COMMAND_WORKDIR}"; then
    AI_COMMAND_WORKDIR="$(realpath "${AI_COMMAND_WORKDIR}")"
    if test $? != 0; then
-    printf '%s' '{"user_message":"Realpath command workdir error!","permission":"deny"}'; exit 2
+    echo 'Realpath command workdir error!' >&2
+    printf '%s' '{"permission":"deny"}'; exit 2
    elif [[ ! -d "${AI_COMMAND_WORKDIR}" ]]; then
     echo "Workdir \"${AI_COMMAND_WORKDIR}\" command error!" >&2
     printf '%s' '{"permission":"deny"}'; exit 2
@@ -83,10 +98,12 @@ case "${AI_COMMAND_NAME}" in
  'Read'|'Write'|'StrReplace'|'Delete'|'Grep')
   AI_COMMAND_FILE_PATH=$(printf '%s' "${JSON_INPUT}" | yq -eMr -p=json -o=json .tool_input.file_path)
   if test $? -ne 0; then
-   printf '%s' '{"user_message":"Could not get command file path!","permission":"deny"}'; exit 2; fi
+   echo 'Could not get command file path!' >&2
+   printf '%s' '{"permission":"deny"}'; exit 2; fi
   AI_COMMAND_FILE_PATH="$(realpath -m "${AI_COMMAND_FILE_PATH}")"
   if test $? != 0; then
-   printf '%s' '{"user_message":"Realpath command file error!","permission":"deny"}'; exit 2; fi;;
+   echo 'Realpath command file error!' >&2
+   printf '%s' '{"permission":"deny"}'; exit 2; fi;;
 esac
 
 if test -f "${ISSUER}"; then
@@ -104,8 +121,8 @@ fi
 if test -n "${AI_COMMAND_FILE_PATH}"; then
  if [[ "${AI_COMMAND_FILE_PATH}" != "${AI_WORKDIR}"/* ]]; then
   if [[ "${AI_COMMAND_NAME}" != 'Grep' || "${AI_COMMAND_FILE_PATH}" != "${AI_WORKDIR}" ]]; then
-   STR_VALUE="Workdir \"${AI_WORKDIR}\" does not contain \"${AI_COMMAND_FILE_PATH}\"!" \
-    yq -nM -p=json -o=json '{"user_message":strenv(STR_VALUE),"permission":"deny"}'; exit 2; fi
+   echo "Workdir \"${AI_WORKDIR}\" does not contain \"${AI_COMMAND_FILE_PATH}\"!" >&2
+   printf '%s' '{"permission":"deny"}'; exit 2; fi
  fi
 fi
 
