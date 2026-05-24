@@ -104,8 +104,8 @@ fi
 if test -n "${AI_COMMAND_FILE_PATH}"; then
  if [[ "${AI_COMMAND_FILE_PATH}" != "${AI_WORKDIR}"/* ]]; then
   if [[ "${AI_COMMAND_NAME}" != 'Grep' || "${AI_COMMAND_FILE_PATH}" != "${AI_WORKDIR}" ]]; then
-   echo "Workdir \"${AI_WORKDIR}\" does not contain \"${AI_COMMAND_FILE_PATH}\"!" >&2
-   printf '%s' '{"permission":"deny"}'; exit 2; fi
+   STR_VALUE="Workdir \"${AI_WORKDIR}\" does not contain \"${AI_COMMAND_FILE_PATH}\"!" \
+    yq -nM -p=json -o=json '{"user_message":strenv(STR_VALUE),"permission":"deny"}'; exit 2; fi
  fi
 fi
 
