@@ -35,22 +35,6 @@ if test $? -ne 0; then
  echo 'Could not get generation ID!' >&2
  echo '{"permission":"deny"}'; exit 2; fi
 
-AI_COMMAND_WORKDIR=$(printf '%s' "${JSON_INPUT}" | yq -Mr -p=json -o=json '.tool_input.cwd // ""')
-if test $? -ne 0; then
- echo 'Could not get workdir!' >&2
- echo '{"permission":"deny"}'; exit 2; fi
-
-if test -n "${AI_COMMAND_WORKDIR}"; then
- AI_COMMAND_WORKDIR="$(realpath "${AI_COMMAND_WORKDIR}")"
- if test $? != 0; then
-  echo "Realpath command error!" >&2
-  echo '{"permission":"deny"}'; exit 2
- elif [[ ! -d "${AI_COMMAND_WORKDIR}" ]]; then
-  echo "Workdir \"${AI_COMMAND_WORKDIR}\" command error!" >&2
-  echo '{"permission":"deny"}'; exit 2
- fi
-fi
-
 AI_COMMAND_NAME=$(printf '%s' "${JSON_INPUT}" | yq -eMr -p=json -o=json .tool_name)
 if test $? -ne 0; then
  echo 'Could not get command name!' >&2
@@ -69,32 +53,6 @@ elif test -z "${AI_COMMAND_ID}"; then
  echo '{"permission":"deny"}'; exit 2
 fi
 
-case "${AI_COMMAND_NAME}" in
- 'Shell')
-  AI_COMMAND_SHELL=$(printf '%s' "${JSON_INPUT}" | yq -Mr -p=json -o=json '.tool_input.command // ""')
-  if test $? -ne 0; then
-   echo 'Could not get command!' >&2
-   echo '{"permission":"deny"}'; exit 2
-  elif test -z "${AI_COMMAND_SHELL}"; then
-   echo 'Command is empty!' >&2
-   echo '{"permission":"deny"}'; exit 2
-  fi;;
- 'Read'|'Write'|'StrReplace'|'Delete')
-  AI_COMMAND_FILE_PATH=$(printf '%s' "${JSON_INPUT}" | yq -eMr -p=json -o=json .tool_input.file_path)
-  if test $? -ne 0; then
-   echo 'Could not get file path!' >&2
-   echo '{"permission":"deny"}'; exit 2
-  fi
-  AI_COMMAND_FILE_PATH="$(realpath "${AI_COMMAND_FILE_PATH}")"
-  if test $? != 0; then
-   echo "Realpath file error!" >&2
-   echo '{"permission":"deny"}'; exit 2
-  elif [[ "${AI_COMMAND_FILE_PATH}" != "${AI_WORKDIR}"/* ]]; then
-   echo "Workdir \"${AI_WORKDIR}\" does not contain \"${AI_COMMAND_FILE_PATH}\"!" >&2
-   echo '{"permission":"deny"}'; exit 2
-  fi;;
-esac
-
 AI_COMMAND_TIMESTAMP=$(TZ='utc' LC_ALL=C date +%s%3N)
 
 ISSUER="${AI_WORKDIR}/.excluded/yml/${AI_NAME}/${AI_NAME}-${AI_SESSION_ID}-${AI_TURN_ID}.yml"
@@ -109,15 +67,61 @@ if test -f "${ISSUER}"; then
   echo "Actual turn id \"${ACTUAL_TURN_ID}\", but expected \"${AI_TURN_ID}\"!" >&2
   echo '{"permission":"deny"}'; exit 2; fi
  yq -i -p=yml -o=yml ".commands.${AI_COMMAND_ID}.timestamp=${AI_COMMAND_TIMESTAMP}" "${ISSUER}"
- if test -n "${AI_COMMAND_WORKDIR}"; then
-  STR_VALUE="${AI_COMMAND_WORKDIR}" \
-   yq -i -p=yml -o=yml ".commands.${AI_COMMAND_ID}.workdir=strenv(STR_VALUE)" "${ISSUER}"
- fi
  STR_VALUE="${AI_COMMAND_NAME}" \
   yq -i -p=yml -o=yml ".commands.${AI_COMMAND_ID}.name=strenv(STR_VALUE)" "${ISSUER}"
+fi
+
+case "${AI_COMMAND_NAME}" in
+ 'Shell')
+  AI_COMMAND_SHELL=$(printf '%s' "${JSON_INPUT}" | yq -Mr -p=json -o=json '.tool_input.command // ""')
+  if test $? -ne 0; then
+   echo 'Could not get command!' >&2
+   echo '{"permission":"deny"}'; exit 2
+  elif test -z "${AI_COMMAND_SHELL}"; then
+   echo 'Command is empty!' >&2
+   echo '{"permission":"deny"}'; exit 2
+  fi
+  AI_COMMAND_WORKDIR=$(printf '%s' "${JSON_INPUT}" | yq -Mr -p=json -o=json '.tool_input.cwd // ""')
+  if test $? -ne 0; then
+   echo 'Could not get command workdir!' >&2
+   echo '{"permission":"deny"}'; exit 2
+  elif test -n "${AI_COMMAND_WORKDIR}"; then
+   AI_COMMAND_WORKDIR="$(realpath "${AI_COMMAND_WORKDIR}")"
+   if test $? != 0; then
+    echo "Realpath command workdir error!" >&2
+    echo '{"permission":"deny"}'; exit 2
+   elif [[ ! -d "${AI_COMMAND_WORKDIR}" ]]; then
+    echo "Workdir \"${AI_COMMAND_WORKDIR}\" command error!" >&2
+    echo '{"permission":"deny"}'; exit 2
+   fi
+  fi;;
+ 'Read'|'Write'|'StrReplace'|'Delete')
+  AI_COMMAND_FILE_PATH=$(printf '%s' "${JSON_INPUT}" | yq -eMr -p=json -o=json .tool_input.file_path)
+  if test $? -ne 0; then
+   echo 'Could not get file path!' >&2
+   echo '{"permission":"deny"}'; exit 2; fi
+  AI_COMMAND_FILE_PATH="$(realpath "${AI_COMMAND_FILE_PATH}")"
+  if test $? != 0; then
+   echo "Realpath file error!" >&2
+   echo '{"permission":"deny"}'; exit 2; fi;;
+esac
+
+if test -f "${ISSUER}"; then
+ if test -n "${AI_COMMAND_WORKDIR}"; then
+  STR_VALUE="${AI_COMMAND_WORKDIR}" \
+   yq -i -p=yml -o=yml ".commands.${AI_COMMAND_ID}.workdir=strenv(STR_VALUE)" "${ISSUER}"; fi
  if test -n "${AI_COMMAND_SHELL}"; then
   STR_VALUE="${AI_COMMAND_SHELL}" \
    yq -i -p=yml -o=yml ".commands.${AI_COMMAND_ID}.shell=strenv(STR_VALUE)" "${ISSUER}"; fi
+ if test -n "${AI_COMMAND_FILE_PATH}"; then
+  STR_VALUE="${AI_COMMAND_FILE_PATH}" \
+   yq -i -p=yml -o=yml ".commands.${AI_COMMAND_ID}.file=strenv(STR_VALUE)" "${ISSUER}"; fi
+fi
+
+if test -n "${AI_COMMAND_FILE_PATH}"; then
+ if [[ "${AI_COMMAND_FILE_PATH}" != "${AI_WORKDIR}"/* ]]; then
+  echo "Workdir \"${AI_WORKDIR}\" does not contain \"${AI_COMMAND_FILE_PATH}\"!" >&2
+  echo '{"permission":"deny"}'; exit 2; fi
 fi
 
 echo '{"permission":"allow"}'
