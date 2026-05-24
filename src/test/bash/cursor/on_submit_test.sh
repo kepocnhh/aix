@@ -27,4 +27,17 @@ ACTUAL_VALUE="$(<"${STDERR}")"
 if test "${ACTUAL_VALUE}" != 'No workdir!'; then
  echo "Actual value(${#ACTUAL_VALUE}) is: \"${ACTUAL_VALUE}\"!" >&2; exit 1; fi
 
+:> "${STDOUT}"
+:> "${STDERR}"
+
+AI_WORKDIR='42' "${SCRIPT}" >"${STDOUT}" 2>"${STDERR}"; CODE=$?
+if test "${CODE}" != '2'; then
+ echo "Code(${CODE}) error!" >&2; exit 1; fi
+ACTUAL_VALUE="$(<"${STDOUT}")"
+if test "${ACTUAL_VALUE}" != '{"continue":false}'; then
+ echo "Actual value(${#ACTUAL_VALUE}) is: \"${ACTUAL_VALUE}\"!" >&2; exit 1; fi
+ACTUAL_VALUE="$(<"${STDERR}")"
+if test "${ACTUAL_VALUE}" != 'Realpath workdir error!'; then
+ echo "Actual value(${#ACTUAL_VALUE}) is: \"${ACTUAL_VALUE}\"!" >&2; exit 1; fi
+
 echo 'Not implemented!' >&2; exit 1
