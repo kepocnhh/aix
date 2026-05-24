@@ -69,7 +69,7 @@ elif test -z "${AI_COMMAND_ID}"; then
  echo '{"permission":"deny"}'; exit 2
 fi
 
-case "${AI_COMMAND_NAME}"
+case "${AI_COMMAND_NAME}" in
  'Shell')
   AI_COMMAND_SHELL=$(printf '%s' "${JSON_INPUT}" | yq -Mr -p=json -o=json '.tool_input.command // ""')
   if test $? -ne 0; then
