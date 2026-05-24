@@ -100,7 +100,7 @@ case "${AI_COMMAND_NAME}" in
   if test $? -ne 0; then
    echo 'Could not get file path!' >&2
    echo '{"permission":"deny"}'; exit 2; fi
-  AI_COMMAND_FILE_PATH="$(realpath "${AI_COMMAND_FILE_PATH}")"
+  AI_COMMAND_FILE_PATH="$(realpath -m "${AI_COMMAND_FILE_PATH}")"
   if test $? != 0; then
    STR_VALUE='Realpath file error!' \
     yq -nM -p=json -o=json '{"user_message":strenv(STR_VALUE),"permission":"deny"}'; exit 2; fi;;
