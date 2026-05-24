@@ -45,18 +45,19 @@ AI_TIMESTAMP=$(TZ='utc' LC_ALL=C date +%s%3N)
 ISSUER="${AI_WORKDIR}/.excluded/yml/${AI_NAME}"
 
 if test -d "${ISSUER}"; then
+ ISSUER="${ISSUER}/${AI_NAME}-${AI_SESSION_ID}-${AI_TURN_ID}.yml"
  AI_SESSION_ID="${AI_SESSION_ID}" \
  AI_TURN_ID="${AI_TURN_ID}" \
  USER_PROMPT="${USER_PROMPT}" \
  AI_WORKDIR="${AI_WORKDIR}" \
  AI_TIMESTAMP="${AI_TIMESTAMP}" \
- yq -n -M -o yml '{
+ yq -nM -o=yml '{
    "session_id": strenv(AI_SESSION_ID),
    "turn_id": strenv(AI_TURN_ID),
    "prompt": strenv(USER_PROMPT),
    "workdir": strenv(AI_WORKDIR),
-   "timestamp": AI_TIMESTAMP
-  }' > "${ISSUER}/${AI_NAME}-${AI_SESSION_ID}-${AI_TURN_ID}.yml"
+  }' > "${ISSUER}"
+ yq -i -p=yml -o=yml ".timestamp=${AI_TIMESTAMP}" "${ISSUER}"
 fi
 
 echo '{"continue":true}'
