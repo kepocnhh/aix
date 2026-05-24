@@ -54,20 +54,20 @@ fi
 
 AI_COMMAND_TIMESTAMP=$(TZ='utc' LC_ALL=C date +%s%3N)
 
-ISSUER="${AI_WORKDIR}/.excluded/yml/${AI_NAME}/${AI_NAME}-${AI_SESSION_ID}-${AI_TURN_ID}.yml"
+ISSUER="${AI_WORKDIR}/.excluded/json/${AI_NAME}/${AI_NAME}-${AI_SESSION_ID}-${AI_TURN_ID}.json"
 
 if test -f "${ISSUER}"; then
- ACTUAL_SESSION_ID=$(yq -r -p=yml -o=json .session_id "${ISSUER}")
+ ACTUAL_SESSION_ID=$(yq -r -p=json -o=json .session_id "${ISSUER}")
  if [[ "${AI_SESSION_ID}" != "${ACTUAL_SESSION_ID}" ]]; then
   echo "Actual session id \"${ACTUAL_SESSION_ID}\", but expected \"${AI_SESSION_ID}\"!" >&2
   printf '%s' '{"permission":"deny"}'; exit 2; fi
- ACTUAL_TURN_ID=$(yq -r -p=yml -o=json .turn_id "${ISSUER}")
+ ACTUAL_TURN_ID=$(yq -r -p=json -o=json .turn_id "${ISSUER}")
  if [[ "${AI_TURN_ID}" != "${ACTUAL_TURN_ID}" ]]; then
   echo "Actual turn id \"${ACTUAL_TURN_ID}\", but expected \"${AI_TURN_ID}\"!" >&2
   printf '%s' '{"permission":"deny"}'; exit 2; fi
- yq -i -p=yml -o=yml ".commands.${AI_COMMAND_ID}.timestamp=${AI_COMMAND_TIMESTAMP}" "${ISSUER}"
+ yq -i -p=json -o=json ".commands.${AI_COMMAND_ID}.timestamp=${AI_COMMAND_TIMESTAMP}" "${ISSUER}"
  STR_VALUE="${AI_COMMAND_NAME}" \
-  yq -i -p=yml -o=yml ".commands.${AI_COMMAND_ID}.name=strenv(STR_VALUE)" "${ISSUER}"
+  yq -i -p=json -o=json ".commands.${AI_COMMAND_ID}.name=strenv(STR_VALUE)" "${ISSUER}"
 fi
 
 case "${AI_COMMAND_NAME}" in
@@ -108,13 +108,13 @@ esac
 if test -f "${ISSUER}"; then
  if test -n "${AI_COMMAND_WORKDIR}"; then
   STR_VALUE="${AI_COMMAND_WORKDIR}" \
-   yq -i -p=yml -o=yml ".commands.${AI_COMMAND_ID}.workdir=strenv(STR_VALUE)" "${ISSUER}"; fi
+   yq -i -p=json -o=json ".commands.${AI_COMMAND_ID}.workdir=strenv(STR_VALUE)" "${ISSUER}"; fi
  if test -n "${AI_COMMAND_SHELL}"; then
   STR_VALUE="${AI_COMMAND_SHELL}" \
-   yq -i -p=yml -o=yml ".commands.${AI_COMMAND_ID}.shell=strenv(STR_VALUE)" "${ISSUER}"; fi
+   yq -i -p=json -o=json ".commands.${AI_COMMAND_ID}.shell=strenv(STR_VALUE)" "${ISSUER}"; fi
  if test -n "${AI_COMMAND_FILE_PATH}"; then
   STR_VALUE="${AI_COMMAND_FILE_PATH}" \
-   yq -i -p=yml -o=yml ".commands.${AI_COMMAND_ID}.file=strenv(STR_VALUE)" "${ISSUER}"; fi
+   yq -i -p=json -o=json ".commands.${AI_COMMAND_ID}.file=strenv(STR_VALUE)" "${ISSUER}"; fi
 fi
 
 if test -n "${AI_COMMAND_FILE_PATH}"; then
