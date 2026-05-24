@@ -7,7 +7,7 @@ VERSION='0.0.1'
 mkdir 'build'
 mkdir -p 'build/yml'
 ISSUER='build/yml/metadata.yml'
-printf '%s' "repository:
+echo "repository:
  owner: '${REP_OWNER}'
  name: '${REP_NAME}'
 version: '${VERSION}'" > "${ISSUER}"
