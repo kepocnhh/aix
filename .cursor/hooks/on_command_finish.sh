@@ -75,22 +75,22 @@ if test "${AI_COMMAND_NAME}" == 'Shell'; then
  fi
 fi
 
-ISSUER="${AI_WORKDIR}/.excluded/yml/${AI_NAME}/${AI_NAME}-${AI_SESSION_ID}-${AI_TURN_ID}.yml"
+ISSUER="${AI_WORKDIR}/.excluded/json/${AI_NAME}/${AI_NAME}-${AI_SESSION_ID}-${AI_TURN_ID}.json"
 
 if test -f "${ISSUER}"; then
- ACTUAL_SESSION_ID=$(yq -r -p=yml -o=json .session_id "${ISSUER}")
+ ACTUAL_SESSION_ID=$(yq -r -p=json -o=json .session_id "${ISSUER}")
  if [[ "${AI_SESSION_ID}" != "${ACTUAL_SESSION_ID}" ]]; then
   echo "Actual session id \"${ACTUAL_SESSION_ID}\", but expected \"${AI_SESSION_ID}\"!" >&2; exit 1; fi
- ACTUAL_TURN_ID=$(yq -r -p=yml -o=json .turn_id "${ISSUER}")
+ ACTUAL_TURN_ID=$(yq -r -p=json -o=json .turn_id "${ISSUER}")
  if [[ "${AI_TURN_ID}" != "${ACTUAL_TURN_ID}" ]]; then
   echo "Actual turn id \"${ACTUAL_TURN_ID}\", but expected \"${AI_TURN_ID}\"!" >&2; exit 1; fi
- ACTUAL_COMMAND_NAME=$(yq -r -p=yml -o=json ".commands.${AI_COMMAND_ID}.name" "${ISSUER}")
+ ACTUAL_COMMAND_NAME=$(yq -r -p=json -o=json ".commands.${AI_COMMAND_ID}.name" "${ISSUER}")
  if [[ "${AI_COMMAND_NAME}" != "${ACTUAL_COMMAND_NAME}" ]]; then
   echo "Actual command name \"${ACTUAL_COMMAND_NAME}\", but expected \"${AI_COMMAND_NAME}\"!" >&2; exit 1; fi
  if test "${AI_COMMAND_NAME}" == 'Shell'; then
-  ACTUAL_COMMAND_SHELL=$(yq -r -p=yml -o=json ".commands.${AI_COMMAND_ID}.shell" "${ISSUER}")
+  ACTUAL_COMMAND_SHELL=$(yq -r -p=json -o=json ".commands.${AI_COMMAND_ID}.shell" "${ISSUER}")
   if [[ "${AI_COMMAND_SHELL}" != "${ACTUAL_COMMAND_SHELL}" ]]; then
    echo "Actual command shell \"${ACTUAL_COMMAND_SHELL}\", but expected \"${AI_COMMAND_SHELL}\"!" >&2; exit 1;fi
-  yq -i -p=yml -o=yml ".commands.${AI_COMMAND_ID}.code=${AI_COMMAND_EXIT_CODE}" "${ISSUER}"
+  yq -i -p=json -o=json ".commands.${AI_COMMAND_ID}.code=${AI_COMMAND_EXIT_CODE}" "${ISSUER}"
  fi
 fi
