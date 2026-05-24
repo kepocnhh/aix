@@ -69,16 +69,31 @@ elif test -z "${AI_COMMAND_ID}"; then
  echo '{"permission":"deny"}'; exit 2
 fi
 
-if test "${AI_COMMAND_NAME}" == 'Shell'; then
- AI_COMMAND_SHELL=$(printf '%s' "${JSON_INPUT}" | yq -Mr -p=json -o=json '.tool_input.command // ""')
- if test $? -ne 0; then
-  echo 'Could not get command!' >&2
-  echo '{"permission":"deny"}'; exit 2
- elif test -z "${AI_COMMAND_SHELL}"; then
-  echo 'Command is empty!' >&2
-  echo '{"permission":"deny"}'; exit 2
- fi
-fi
+case "${AI_COMMAND_NAME}"
+ 'Shell')
+  AI_COMMAND_SHELL=$(printf '%s' "${JSON_INPUT}" | yq -Mr -p=json -o=json '.tool_input.command // ""')
+  if test $? -ne 0; then
+   echo 'Could not get command!' >&2
+   echo '{"permission":"deny"}'; exit 2
+  elif test -z "${AI_COMMAND_SHELL}"; then
+   echo 'Command is empty!' >&2
+   echo '{"permission":"deny"}'; exit 2
+  fi;;
+ 'Read'|'Write'|'StrReplace'|'Delete')
+  AI_COMMAND_FILE_PATH=$(printf '%s' "${JSON_INPUT}" | yq -Mr -p=json -o=json '.tool_input.path // ""')
+  if test $? -ne 0; then
+   echo 'Could not get file path!' >&2
+   echo '{"permission":"deny"}'; exit 2
+  fi
+  AI_COMMAND_FILE_PATH="$(realpath "${AI_COMMAND_FILE_PATH}")"
+  if test $? != 0; then
+   echo "Realpath file error!" >&2
+   echo '{"permission":"deny"}'; exit 2
+  elif [[ "${AI_COMMAND_FILE_PATH}" != "${AI_WORKDIR}"/* ]]; then
+   echo "Workdir \"${AI_WORKDIR}\" does not contain \"${AI_COMMAND_FILE_PATH}\"!" >&2
+   echo '{"permission":"deny"}'; exit 2
+  fi;;
+esac
 
 AI_COMMAND_TIMESTAMP=$(TZ='utc' LC_ALL=C date +%s%3N)
 
