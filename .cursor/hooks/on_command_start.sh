@@ -80,7 +80,7 @@ if test "${AI_COMMAND_NAME}" == 'Shell'; then
  fi
 fi
 
-AI_COMMAND_TIMESTAMP=$(TZ='utc' LC_ALL=C date +%s)
+AI_COMMAND_TIMESTAMP=$(TZ='utc' LC_ALL=C date +%s%3N)
 
 ISSUER="${AI_WORKDIR}/.excluded/yml/${AI_NAME}/${AI_NAME}-${AI_SESSION_ID}-${AI_TURN_ID}.yml"
 

@@ -40,6 +40,8 @@ if test -z "${USER_PROMPT}"; then
  echo "No prompt!" >&2
  echo '{"continue":false}'; exit 2; fi
 
+AI_TIMESTAMP=$(TZ='utc' LC_ALL=C date +%s%3N)
+
 ISSUER="${AI_WORKDIR}/.excluded/yml/${AI_NAME}"
 
 if test -d "${ISSUER}"; then
@@ -47,11 +49,13 @@ if test -d "${ISSUER}"; then
  AI_TURN_ID="${AI_TURN_ID}" \
  USER_PROMPT="${USER_PROMPT}" \
  AI_WORKDIR="${AI_WORKDIR}" \
+ AI_TIMESTAMP="${AI_TIMESTAMP}" \
  yq -n -M -o yml '{
    "session_id": strenv(AI_SESSION_ID),
    "turn_id": strenv(AI_TURN_ID),
    "prompt": strenv(USER_PROMPT),
-   "workdir": strenv(AI_WORKDIR)
+   "workdir": strenv(AI_WORKDIR),
+   "timestamp": AI_TIMESTAMP
   }' > "${ISSUER}/${AI_NAME}-${AI_SESSION_ID}-${AI_TURN_ID}.yml"
 fi
 
