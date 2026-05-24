@@ -2,6 +2,20 @@
 
 AI_NAME='cursor'
 
+if test -z "${AI_WORKDIR}"; then
+ echo 'No workdir!' >&2
+ echo '{"permission":"deny"}'; exit 2
+fi
+
+AI_WORKDIR="$(realpath "${AI_WORKDIR}")"
+if test $? != 0; then
+ echo "Realpath workdir error!" >&2
+ echo '{"permission":"deny"}'; exit 2
+elif [[ ! -d "${AI_WORKDIR}" ]]; then
+ echo "Workdir \"${AI_WORKDIR}\" error!" >&2
+ echo '{"permission":"deny"}'; exit 2
+fi
+
 JSON_INPUT="$(cat)"
 if test $? -ne 0; then
  echo 'Could not get JSON input!' >&2
@@ -21,12 +35,12 @@ if test $? -ne 0; then
  echo 'Could not get generation ID!' >&2
  echo '{"permission":"deny"}'; exit 2; fi
 
-AI_WORKDIR="$(pwd)"
-if test $? != 0; then
- echo "Get workdir error!" >&2
+AI_COMMAND_NAME=$(printf '%s' "${JSON_INPUT}" | yq -eMr -p=json -o=json .tool_name)
+if test $? -ne 0; then
+ echo 'Could not get command name!' >&2
  echo '{"permission":"deny"}'; exit 2
-elif [[ ! -d "${AI_WORKDIR}" ]]; then
- echo "Workdir \"${AI_WORKDIR}\" error!" >&2
+elif test "${AI_COMMAND_NAME}" != 'Shell'; then
+ echo "Command name \"${AI_COMMAND_NAME}\" is not supported!" >&2
  echo '{"permission":"deny"}'; exit 2
 fi
 
@@ -46,16 +60,16 @@ if test -n "${AI_COMMAND_WORKDIR}"; then
  fi
 fi
 
-AI_COMMAND=$(printf '%s' "${JSON_INPUT}" | yq -Mr -p=json -o=json '.command // ""')
+AI_COMMAND_SHELL=$(printf '%s' "${JSON_INPUT}" | yq -Mr -p=json -o=json '.command // ""')
 if test $? -ne 0; then
- echo 'Could not get command!' >&2
+ echo 'Could not get command shell!' >&2
  echo '{"permission":"deny"}'; exit 2
-elif test -z "${AI_COMMAND}"; then
- echo 'Command is empty!' >&2
+elif test -z "${AI_COMMAND_SHELL}"; then
+ echo 'Command shell is empty!' >&2
  echo '{"permission":"deny"}'; exit 2
 fi
 
-if [[ "${AI_COMMAND}" =~ \>|\>\> ]]; then
+if [[ "${AI_COMMAND_SHELL}" =~ \>|\>\> ]]; then
  echo '{"permission":"ask"}'; exit 0; fi
 
 echo '{"permission":"allow"}'

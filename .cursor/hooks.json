@@ -15,7 +15,7 @@
     ],
     "beforeShellExecution": [
       {
-        "command": "/usr/local/bin/bash -c \"cd ${CURSOR_PROJECT_DIR} && ~/.cursor/hooks/on_commands.sh\"",
+        "command": "/usr/local/bin/bash -c \"cd '${CURSOR_PROJECT_DIR}' && AI_WORKDIR='${CURSOR_PROJECT_DIR}' ~/.cursor/hooks/on_command_shell.sh\"",
         "timeout": 16
       }
     ],
