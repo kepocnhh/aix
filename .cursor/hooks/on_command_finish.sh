@@ -7,7 +7,7 @@ if test -z "${AI_WORKDIR}"; then
 
 AI_WORKDIR="$(realpath "${AI_WORKDIR}")"
 if test $? != 0; then
- echo "Realpath workdir error!" >&2; exit 1
+ echo 'Realpath workdir error!' >&2; exit 1
 elif [[ ! -d "${AI_WORKDIR}" ]]; then
  echo "Workdir \"${AI_WORKDIR}\" error!" >&2; exit 1
 fi
@@ -29,12 +29,12 @@ if test $? -ne 0; then
 
 AI_COMMAND_WORKDIR=$(printf '%s' "${JSON_INPUT}" | yq -Mr -p=json -o=json '.tool_input.cwd // ""')
 if test $? -ne 0; then
- echo 'Could not get workdir!' >&2; exit 1; fi
+ echo 'Could not get command workdir!' >&2; exit 1; fi
 
 if test -n "${AI_COMMAND_WORKDIR}"; then
  AI_COMMAND_WORKDIR="$(realpath "${AI_COMMAND_WORKDIR}")"
  if test $? != 0; then
-  echo "Realpath command error!" >&2; exit 1
+  echo 'Realpath command workdir error!' >&2; exit 1
  elif [[ ! -d "${AI_COMMAND_WORKDIR}" ]]; then
   echo "Workdir \"${AI_COMMAND_WORKDIR}\" command error!" >&2; exit 1
  fi
@@ -57,9 +57,9 @@ fi
 if test "${AI_COMMAND_NAME}" == 'Shell'; then
  AI_COMMAND_SHELL=$(printf '%s' "${JSON_INPUT}" | yq -Mr -p=json -o=json '.tool_input.command // ""')
  if test $? -ne 0; then
-  echo 'Could not get command!' >&2; exit 1
+  echo 'Could not get command shell!' >&2; exit 1
  elif test -z "${AI_COMMAND_SHELL}"; then
-  echo 'Command is empty!' >&2; exit 1
+  echo 'Command shell is empty!' >&2; exit 1
  fi
  AI_COMMAND_OUTPUT=$(printf '%s' "${JSON_INPUT}" | yq -Mr -p=json -o=json '.tool_output // null')
  if test $? -ne 0; then
@@ -71,7 +71,7 @@ if test "${AI_COMMAND_NAME}" == 'Shell'; then
  if test $? -ne 0; then
   echo 'Could not get command exit code!' >&2; exit 1
  elif [[ ! "${AI_COMMAND_EXIT_CODE}" =~ ^(0|-?[1-9][0-9]*)$ ]]; then
-  echo 'Wrong command exit code!'; exit 1
+  echo 'Wrong command exit code!' >&2; exit 1
  fi
 fi
 
