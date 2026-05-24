@@ -2,6 +2,20 @@
 
 AI_NAME='cursor'
 
+if test -z "${AI_WORKDIR}"; then
+ echo 'No workdir!' >&2
+ echo '{"permission":"deny"}'; exit 2
+fi
+
+AI_WORKDIR="$(realpath "${AI_WORKDIR}")"
+if test $? != 0; then
+ echo "Realpath workdir error!" >&2
+ echo '{"permission":"deny"}'; exit 2
+elif [[ ! -d "${AI_WORKDIR}" ]]; then
+ echo "Workdir \"${AI_WORKDIR}\" error!" >&2
+ echo '{"permission":"deny"}'; exit 2
+fi
+
 JSON_INPUT="$(cat)"
 if test $? -ne 0; then
  echo 'Could not get JSON input!' >&2
@@ -26,18 +40,18 @@ if test -z "${USER_PROMPT}"; then
  echo "No prompt!" >&2
  echo '{"continue":false}'; exit 2; fi
 
-AI_WORKDIR="$(pwd)"
-
 ISSUER="${AI_WORKDIR}/.excluded/yml/${AI_NAME}"
 
 if test -d "${ISSUER}"; then
  AI_SESSION_ID="${AI_SESSION_ID}" \
  AI_TURN_ID="${AI_TURN_ID}" \
  USER_PROMPT="${USER_PROMPT}" \
+ AI_WORKDIR="${AI_WORKDIR}" \
  yq -n -M -o yml '{
    "session_id": strenv(AI_SESSION_ID),
    "turn_id": strenv(AI_TURN_ID),
-   "prompt": strenv(USER_PROMPT)
+   "prompt": strenv(USER_PROMPT),
+   "workdir": strenv(AI_WORKDIR)
   }' > "${ISSUER}/${AI_NAME}-${AI_SESSION_ID}-${AI_TURN_ID}.yml"
 fi
 
