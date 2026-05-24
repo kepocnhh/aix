@@ -95,7 +95,7 @@ case "${AI_COMMAND_NAME}" in
     echo '{"permission":"deny"}'; exit 2
    fi
   fi;;
- 'Read'|'Write'|'StrReplace'|'Delete')
+ 'Read'|'Write'|'StrReplace'|'Delete'|'Grep')
   AI_COMMAND_FILE_PATH=$(printf '%s' "${JSON_INPUT}" | yq -eMr -p=json -o=json .tool_input.file_path)
   if test $? -ne 0; then
    echo 'Could not get file path!' >&2
@@ -120,8 +120,10 @@ fi
 
 if test -n "${AI_COMMAND_FILE_PATH}"; then
  if [[ "${AI_COMMAND_FILE_PATH}" != "${AI_WORKDIR}"/* ]]; then
-  echo "Workdir \"${AI_WORKDIR}\" does not contain \"${AI_COMMAND_FILE_PATH}\"!" >&2
-  echo '{"permission":"deny"}'; exit 2; fi
+  if [[ "${AI_COMMAND_NAME}" != 'Grep' || "${AI_COMMAND_FILE_PATH}" != "${AI_WORKDIR}" ]]; then
+   echo "Workdir \"${AI_WORKDIR}\" does not contain \"${AI_COMMAND_FILE_PATH}\"!" >&2
+   echo '{"permission":"deny"}'; exit 2; fi
+ fi
 fi
 
 echo '{"permission":"allow"}'
