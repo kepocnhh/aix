@@ -7,7 +7,7 @@ if test -z "${AI_WORKDIR}"; then
 
 AI_WORKDIR="$(realpath "${AI_WORKDIR}")"
 if test $? != 0; then
- echo "Realpath workdir error!" >&2; exit 1
+ echo 'Realpath workdir error!' >&2; exit 1
 elif [[ ! -d "${AI_WORKDIR}" ]]; then
  echo "Workdir \"${AI_WORKDIR}\" error!" >&2; exit 1
 fi
@@ -40,7 +40,7 @@ fi
 
 AI_RESPONSE=$(printf '%s' "${JSON_INPUT}" | yq -r -p=json -o=json '.text // ""')
 if test -z "${AI_RESPONSE}"; then
- echo "No response!" >&2; exit 1; fi
+ echo 'No response!' >&2; exit 1; fi
 
 ISSUER="${AI_WORKDIR}/.excluded/md/${AI_NAME}"
 
