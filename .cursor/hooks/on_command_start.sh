@@ -80,7 +80,7 @@ case "${AI_COMMAND_NAME}" in
    echo '{"permission":"deny"}'; exit 2
   fi;;
  'Read'|'Write'|'StrReplace'|'Delete')
-  AI_COMMAND_FILE_PATH=$(printf '%s' "${JSON_INPUT}" | yq -Mr -p=json -o=json '.tool_input.path // ""')
+  AI_COMMAND_FILE_PATH=$(printf '%s' "${JSON_INPUT}" | yq -eMr -p=json -o=json .tool_input.file_path)
   if test $? -ne 0; then
    echo 'Could not get file path!' >&2
    echo '{"permission":"deny"}'; exit 2
