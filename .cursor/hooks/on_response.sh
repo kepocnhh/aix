@@ -3,17 +3,13 @@
 AI_NAME='cursor'
 
 if test -z "${AI_WORKDIR}"; then
- echo 'No workdir!' >&2
- echo '{"permission":"deny"}'; exit 2
-fi
+ echo 'No workdir!' >&2; exit 1; fi
 
 AI_WORKDIR="$(realpath "${AI_WORKDIR}")"
 if test $? != 0; then
- echo "Realpath workdir error!" >&2
- echo '{"permission":"deny"}'; exit 2
+ echo "Realpath workdir error!" >&2; exit 1
 elif [[ ! -d "${AI_WORKDIR}" ]]; then
- echo "Workdir \"${AI_WORKDIR}\" error!" >&2
- echo '{"permission":"deny"}'; exit 2
+ echo "Workdir \"${AI_WORKDIR}\" error!" >&2; exit 1
 fi
 
 FILE_DIR="$(TZ='utc' LC_ALL=C date +%Y/%m/%d)"
