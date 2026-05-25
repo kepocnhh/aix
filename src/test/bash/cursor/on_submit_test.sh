@@ -73,6 +73,20 @@ if test "${ACTUAL_VALUE}" != 'Could not get JSON input!'; then
  echo "Actual value(${#ACTUAL_VALUE}) is: \"${ACTUAL_VALUE}\"!" >&2; exit 1; fi
 rm -rf "${TMP_DIR}"
 
+:> "${STDOUT}"
+:> "${STDERR}"
+
+TMP_DIR="$(mktemp -d)"
+printf '' | AI_WORKDIR="${TMP_DIR}" "${SCRIPT}" >"${STDOUT}" 2>"${STDERR}"; CODE=$?
+if test "${CODE}" != '2'; then
+ echo "Code(${CODE}) error!" >&2; exit 1; fi
+ACTUAL_VALUE="$(<"${STDOUT}")"
+if test "${ACTUAL_VALUE}" != '{"continue":false}'; then
+ echo "Actual value(${#ACTUAL_VALUE}) is: \"${ACTUAL_VALUE}\"!" >&2; exit 1; fi
+ACTUAL_VALUE="$(<"${STDERR}")"
+if test "${ACTUAL_VALUE}" != 'JSON input is empty!'; then
+ echo "Actual value(${#ACTUAL_VALUE}) is: \"${ACTUAL_VALUE}\"!" >&2; exit 1; fi
+
 echo 'Not implemented!' >&2; exit 1
 
 rm "${STDOUT}"
