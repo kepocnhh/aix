@@ -18,26 +18,26 @@ fi
 JSON_INPUT="$(cat 2> /dev/null)"
 if test $? -ne 0; then
  echo 'Could not get JSON input!' >&2
- printf '%s' '{"continue":false}'; exit 2
+ printf '{"continue":false}'; exit 2
 elif test -z "${JSON_INPUT}"; then
  echo 'JSON input is empty!' >&2
- printf '%s' '{"continue":false}'; exit 2
+ printf '{"continue":false}'; exit 2
 fi
 
-AI_SESSION_ID=$(printf '%s' "${JSON_INPUT}" | yq -eMr -p=json -o=json .conversation_id)
+AI_SESSION_ID=$(printf "${JSON_INPUT}" | yq -eMr -p=json -o=json .conversation_id 2> /dev/null)
 if test $? -ne 0; then
  echo 'Could not get conversation ID!' >&2
- printf '%s' '{"continue":false}'; exit 2; fi
+ printf '{"continue":false}'; exit 2; fi
 
-AI_TURN_ID=$(printf '%s' "${JSON_INPUT}" | yq -eMr -p=json -o=json .generation_id)
+AI_TURN_ID=$(printf "${JSON_INPUT}" | yq -eMr -p=json -o=json .generation_id)
 if test $? -ne 0; then
  echo 'Could not get generation ID!' >&2
- printf '%s' '{"continue":false}'; exit 2; fi
+ printf '{"continue":false}'; exit 2; fi
 
-USER_PROMPT=$(printf '%s' "${JSON_INPUT}" | yq -Mr -p=json -o=json '.prompt // ""')
+USER_PROMPT=$(printf "${JSON_INPUT}" | yq -Mr -p=json -o=json '.prompt // ""')
 if test -z "${USER_PROMPT}"; then
  echo 'No prompt!' >&2
- printf '%s' '{"continue":false}'; exit 2; fi
+ printf '{"continue":false}'; exit 2; fi
 
 AI_TIMESTAMP=$(TZ='utc' LC_ALL=C date +%s%3N)
 
@@ -58,4 +58,4 @@ if test -d "${ISSUER}"; then
   }" > "${ISSUER}/${AI_NAME}-${AI_SESSION_ID}-${AI_TURN_ID}.json"
 fi
 
-printf '%s' '{"continue":true}'
+printf '{"continue":true}'
