@@ -2,6 +2,8 @@
 
 tests='src/test/bash'
 
+. $tests/cursor/on_submit_test.sh
+
 . $tests/license_test.sh
 . $tests/readme_test.sh
 
