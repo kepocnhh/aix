@@ -5,7 +5,7 @@ AI_NAME='cursor'
 if test -z "${AI_WORKDIR}"; then
  echo 'No workdir!' >&2; exit 1; fi
 
-AI_WORKDIR="$(realpath "${AI_WORKDIR}")"
+AI_WORKDIR="$(realpath "${AI_WORKDIR}" 2> /dev/null)"
 if test $? != 0; then
  echo 'Realpath workdir error!' >&2; exit 1
 elif [[ ! -d "${AI_WORKDIR}" ]]; then
