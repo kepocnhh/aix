@@ -21,7 +21,7 @@ elif test -z "${JSON_INPUT}"; then
  echo 'JSON input is empty!' >&2; exit 1
 fi
 
-AI_SESSION_ID=$(printf '%s' "${JSON_INPUT}" | yq -eMr -p=json -o=json .conversation_id)
+AI_SESSION_ID=$(printf '%s' "${JSON_INPUT}" | yq -eMr -p=json -o=json .conversation_id 2> /dev/null)
 if test $? -ne 0; then
  echo 'Could not get conversation ID!' >&2; exit 1; fi
 
