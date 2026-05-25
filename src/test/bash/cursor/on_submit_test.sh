@@ -58,6 +58,21 @@ ACTUAL_VALUE="$(<"${STDERR}")"
 if test "${ACTUAL_VALUE}" != 'Realpath workdir error!'; then
  echo "Actual value(${#ACTUAL_VALUE}) is: \"${ACTUAL_VALUE}\"!" >&2; exit 1; fi
 
+:> "${STDOUT}"
+:> "${STDERR}"
+
+TMP_DIR="$(mktemp -d)"
+AI_WORKDIR="${TMP_DIR}" "${SCRIPT}" <"${TMP_DIR}" >"${STDOUT}" 2>"${STDERR}"; CODE=$?
+if test "${CODE}" != '2'; then
+ echo "Code(${CODE}) error!" >&2; exit 1; fi
+ACTUAL_VALUE="$(<"${STDOUT}")"
+if test "${ACTUAL_VALUE}" != '{"continue":false}'; then
+ echo "Actual value(${#ACTUAL_VALUE}) is: \"${ACTUAL_VALUE}\"!" >&2; exit 1; fi
+ACTUAL_VALUE="$(<"${STDERR}")"
+if test "${ACTUAL_VALUE}" != 'Could not get JSON input!'; then
+ echo "Actual value(${#ACTUAL_VALUE}) is: \"${ACTUAL_VALUE}\"!" >&2; exit 1; fi
+rm -rf "${TMP_DIR}"
+
 echo 'Not implemented!' >&2; exit 1
 
 rm "${STDOUT}"

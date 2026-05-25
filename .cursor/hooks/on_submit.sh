@@ -15,7 +15,7 @@ elif [[ ! -d "${AI_WORKDIR}" ]]; then
  printf '{"continue":false}'; exit 2
 fi
 
-JSON_INPUT="$(cat)"
+JSON_INPUT="$(cat 2> /dev/null)"
 if test $? -ne 0; then
  echo 'Could not get JSON input!' >&2
  printf '%s' '{"continue":false}'; exit 2
