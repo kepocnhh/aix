@@ -136,7 +136,21 @@ if test "${ACTUAL_VALUE}" != 'No prompt!'; then
  echo "Actual value(${#ACTUAL_VALUE}) is: \"${ACTUAL_VALUE}\"!" >&2; exit 1; fi
 rm -rf "${TMP_DIR}"
 
-echo 'Not implemented!' >&2; exit 1
+:> "${STDOUT}"
+:> "${STDERR}"
+
+TMP_DIR="$(mktemp -d)"
+JSON_INPUT='{"conversation_id":"foo","generation_id":"bar","prompt":"baz"}'
+printf "${JSON_INPUT}" | AI_WORKDIR="${TMP_DIR}" "${SCRIPT}" >"${STDOUT}" 2>"${STDERR}"; CODE=$?
+if test "${CODE}" != '0'; then
+ echo "Code(${CODE}) error!" >&2; exit 1; fi
+ACTUAL_VALUE="$(<"${STDOUT}")"
+if test "${ACTUAL_VALUE}" != '{"continue":true}'; then
+ echo "Actual value(${#ACTUAL_VALUE}) is: \"${ACTUAL_VALUE}\"!" >&2; exit 1; fi
+ACTUAL_VALUE="$(<"${STDERR}")"
+if test -n "${ACTUAL_VALUE}"; then
+ echo "Actual value(${#ACTUAL_VALUE}) is: \"${ACTUAL_VALUE}\"!" >&2; exit 1; fi
+rm -rf "${TMP_DIR}"
 
 rm "${STDOUT}"
 rm "${STDERR}"
