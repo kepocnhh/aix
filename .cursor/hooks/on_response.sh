@@ -14,7 +14,7 @@ fi
 
 FILE_DIR="$(TZ='utc' LC_ALL=C date +%Y/%m/%d)"
 
-JSON_INPUT="$(cat)"
+JSON_INPUT="$(cat 2> /dev/null)"
 if test $? -ne 0; then
  echo 'Could not get JSON input!' >&2; exit 1
 elif test -z "${JSON_INPUT}"; then
