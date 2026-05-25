@@ -29,7 +29,7 @@ if test $? -ne 0; then
  echo 'Could not get conversation ID!' >&2
  printf '{"continue":false}'; exit 2; fi
 
-AI_TURN_ID=$(printf "${JSON_INPUT}" | yq -eMr -p=json -o=json .generation_id)
+AI_TURN_ID=$(printf "${JSON_INPUT}" | yq -eMr -p=json -o=json .generation_id 2> /dev/null)
 if test $? -ne 0; then
  echo 'Could not get generation ID!' >&2
  printf '{"continue":false}'; exit 2; fi
