@@ -2,7 +2,7 @@
 
 REP_OWNER='kepocnhh'
 REP_NAME='aix'
-VERSION='0.0.2'
+VERSION='0.0.3'
 
 mkdir 'build'
 mkdir -p 'build/yml'
