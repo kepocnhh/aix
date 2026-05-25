@@ -104,6 +104,16 @@ if test "${ACTUAL_VALUE}" != 'No response!'; then
  echo "Actual value(${#ACTUAL_VALUE}) is: \"${ACTUAL_VALUE}\"!" >&2; exit 1; fi
 rm -rf "${TMP_DIR}"
 
-echo 'Not implemented!' >&2; exit 1 # todo
+:> "${STDERR}"
+
+TMP_DIR="$(mktemp -d)"
+JSON_INPUT='{"conversation_id":"foo","generation_id":"bar","text":"baz"}'
+printf "${JSON_INPUT}" | AI_WORKDIR="${TMP_DIR}" "${SCRIPT}" 2>"${STDERR}"; CODE=$?
+if test "${CODE}" != '0'; then
+ echo "Code(${CODE}) error!" >&2; exit 1; fi
+ACTUAL_VALUE="$(<"${STDERR}")"
+if test -n "${ACTUAL_VALUE}"; then
+ echo "Actual value(${#ACTUAL_VALUE}) is: \"${ACTUAL_VALUE}\"!" >&2; exit 1; fi
+rm -rf "${TMP_DIR}"
 
 rm "${STDERR}"
